@@ -31,15 +31,12 @@ namespace Alteruna
 		private float _statusTextTime;
 		private int _roomI = -1;
 
-        private GameObject canvasObject;
-
-
 
         private void Start()
 		{
 			if (Multiplayer == null)
 			{
-				Multiplayer = FindObjectOfType<Multiplayer>();
+				Multiplayer = FindFirstObjectByType<Multiplayer>();
 			}
 
 			if (Multiplayer == null)
@@ -60,7 +57,6 @@ namespace Alteruna
 				{
 					// for more control, use Multiplayer.CreateRoom
 					Multiplayer.JoinOnDemandRoom();
-					canvasObject.SetActive(true);
                     _refreshTime = RefreshInterval;
 				});
 
@@ -93,9 +89,6 @@ namespace Alteruna
 					return;
 				}
 			}
-
-            canvasObject = GameObject.Find("Canvas");
-            canvasObject.SetActive(false);
 
             StartButton.interactable = false;
 			LeaveButton.interactable = false;

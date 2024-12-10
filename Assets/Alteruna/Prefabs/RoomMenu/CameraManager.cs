@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem.Android;
 
 namespace CameraManager {
 public class CameraManager : MonoBehaviour
