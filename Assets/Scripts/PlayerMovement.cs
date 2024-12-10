@@ -7,8 +7,7 @@ using UnityEngine.Rendering;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Base setup")]
-    public float walkingSpeed = 7.5f;
+    [Header("Base setup")] public float walkingSpeed = 7.5f;
     public float runningSpeed = 11.5f;
     public float jumpSpeed = 8.0f;
     public float gravity = 20.0f;
@@ -19,14 +18,13 @@ public class PlayerMovement : MonoBehaviour
     Vector3 moveDirection = Vector3.zero;
     float rotationX = 0;
 
-    [HideInInspector]
-    public bool canMove = true;
+    [HideInInspector] public bool canMove = true;
 
-    [SerializeField]
-    private float cameraYOffset = 0.4f;
+    [SerializeField] private float cameraYOffset = 0.4f;
     private Camera playerCamera;
 
     private Alteruna.Avatar _avatar;
+    private GameObject canvasObject;
 
     void Start()
     {
@@ -41,6 +39,8 @@ public class PlayerMovement : MonoBehaviour
         if (!_avatar.IsMe)
             return;
 
+        canvasObject = GameObject.Find("Canvas");
+
         characterController = GetComponent<CharacterController>();
         playerCamera = Camera.main;
 
@@ -49,8 +49,8 @@ public class PlayerMovement : MonoBehaviour
             Debug.LogError("NO CAMERA");
         }
 
-
-        playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y + cameraYOffset, transform.position.z);
+        playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y + cameraYOffset,
+            transform.position.z);
         playerCamera.transform.SetParent(transform);
         // Lock cursor
         Cursor.lockState = CursorLockMode.Locked;
@@ -66,18 +66,19 @@ public class PlayerMovement : MonoBehaviour
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+            canvasObject.SetActive(false);
         }
         else if (Cursor.lockState == CursorLockMode.None && Input.GetKeyDown(KeyCode.LeftAlt))
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            canvasObject.SetActive(true);
         }
 
         bool isRunning = false;
 
         if (Cursor.lockState == CursorLockMode.Locked)
         {
-
             // Press Left Shift to run
             isRunning = Input.GetKey(KeyCode.LeftShift);
 
