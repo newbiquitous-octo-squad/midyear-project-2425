@@ -15,6 +15,7 @@ public class PlayerMovement : MonoBehaviour
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
 
+
     CharacterController characterController;
     Vector3 moveDirection = Vector3.zero;
     float rotationX = 0;
@@ -28,6 +29,8 @@ public class PlayerMovement : MonoBehaviour
 
     private Alteruna.Avatar _avatar;
     private GameObject canvasObject;
+    private string playerName;
+    private string originalPlayerName;
 
     void Start()
     {
@@ -57,6 +60,10 @@ public class PlayerMovement : MonoBehaviour
             Debug.LogError("NO CAMERA");
         }
 
+        originalPlayerName = transform.name;
+        playerName = originalPlayerName.Substring(8);
+        playerName = playerName.TrimEnd(')');
+
         playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y + cameraYOffset, transform.position.z);
         playerCamera.transform.SetParent(transform);
 
@@ -64,37 +71,48 @@ public class PlayerMovement : MonoBehaviour
     }
 
     void Update()
+{
+    if (!_avatar.IsMe)
+        return;
+
+    if (playerCamera == null)
     {
-        if (!_avatar.IsMe)
+        playerCamera = Camera.main;
+        if (playerCamera == null)
+        {
+            Debug.LogError("Camera not found!");
             return;
-
-        if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.LeftAlt))
-        {
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
-            if (canvasObject != null)
-                canvasObject.SetActive(false);
-            else
-                Debug.LogWarning("Canvas object not found.");
         }
-        else if (Cursor.lockState == CursorLockMode.None && Input.GetKeyDown(KeyCode.LeftAlt))
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            if (canvasObject != null)
-                canvasObject.SetActive(true);
-            else
-                Debug.LogWarning("Canvas object not found.");
-        }
-
-        if (Cursor.lockState == CursorLockMode.Locked)
-        {
-            HandleMovement();
-            HandleRotation();
-        }
-
-        ApplyGravity();
     }
+    Debug.Log(playerName);
+
+    if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.LeftAlt))
+    {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        if (canvasObject != null)
+            canvasObject.SetActive(false);
+        else
+            Debug.LogWarning("Canvas object not found.");
+    }
+    else if (Cursor.lockState == CursorLockMode.None && Input.GetKeyDown(KeyCode.LeftAlt))
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        if (canvasObject != null)
+            canvasObject.SetActive(true);
+        else
+            Debug.LogWarning("Canvas object not found.");
+    }
+
+    if (Cursor.lockState == CursorLockMode.Locked)
+    {
+        HandleMovement();
+        HandleRotation();
+    }
+
+    ApplyGravity();
+}
 
     private void HandleMovement()
     {

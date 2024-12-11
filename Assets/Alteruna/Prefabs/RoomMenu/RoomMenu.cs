@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using Alteruna.Trinity;
-using CameraManager;
 
 
 namespace Alteruna
@@ -60,14 +59,14 @@ namespace Alteruna
                     _refreshTime = RefreshInterval;
 				});
 
-				LeaveButton.onClick.AddListener(() =>
-				{
+                LeaveButton.onClick.AddListener(() =>
+                {
                     Multiplayer.CurrentRoom?.Leave();
-                    CameraManager.CameraManager.ReinstantiateCamera(new Vector3(54.6f, 10, 0), Quaternion.Euler(0, 0, 0));
+                    CameraManager.ReinstantiateCamera(new Vector3(54.6f, 10, 0), Quaternion.Euler(0, 0, 0), transform);
                     _refreshTime = RefreshInterval;
-				});
+                });
 
-				if (TitleText != null)
+                if (TitleText != null)
 				{
 					ResponseCode blockedReason = Multiplayer.GetLastBlockResponse();
 					if (blockedReason != ResponseCode.NaN)
