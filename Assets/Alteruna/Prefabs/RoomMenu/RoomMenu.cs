@@ -62,7 +62,8 @@ namespace Alteruna
                 LeaveButton.onClick.AddListener(() =>
                 {
                     Multiplayer.CurrentRoom?.Leave();
-                    CameraManager.ReinstantiateCamera(new Vector3(54.6f, 10, 0), Quaternion.Euler(0, 0, 0), transform);
+                    CameraManager.ReinstantiateCamera(new Vector3(54.6f, 10, 0), Quaternion.Euler(0, 0, 0), transform.parent);
+					Debug.Log("skibidi");
                     _refreshTime = RefreshInterval;
                 });
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using NUnit.Framework.Constraints;
 using UnityEngine;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.Rendering;
@@ -14,6 +15,7 @@ public class PlayerMovement : MonoBehaviour
     public float gravity = 20.0f;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
+    private bool roomsMenuOpen = false;
 
 
     CharacterController characterController;
@@ -29,8 +31,8 @@ public class PlayerMovement : MonoBehaviour
 
     private Alteruna.Avatar _avatar;
     private GameObject canvasObject;
-    private string playerName;
-    private string originalPlayerName;
+
+    private GameObject rooms;
 
     void Start()
     {
@@ -52,6 +54,13 @@ public class PlayerMovement : MonoBehaviour
             Debug.LogError("Canvas GameObject not found in the hierarchy.");
         }
 
+        rooms = GameObject.Find("Room Menu");
+        if (rooms == null)
+        {
+            Debug.LogError("rooms aren't");
+        }
+        rooms.SetActive(false);
+
         characterController = GetComponent<CharacterController>();
         playerCamera = Camera.main;
 
@@ -59,10 +68,6 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.LogError("NO CAMERA");
         }
-
-        originalPlayerName = transform.name;
-        playerName = originalPlayerName.Substring(8);
-        playerName = playerName.TrimEnd(')');
 
         playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y + cameraYOffset, transform.position.z);
         playerCamera.transform.SetParent(transform);
@@ -84,9 +89,7 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
     }
-    Debug.Log(playerName);
-
-    if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.LeftAlt))
+    if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.Z))
     {
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
@@ -95,7 +98,7 @@ public class PlayerMovement : MonoBehaviour
         else
             Debug.LogWarning("Canvas object not found.");
     }
-    else if (Cursor.lockState == CursorLockMode.None && Input.GetKeyDown(KeyCode.LeftAlt))
+    else if (Cursor.lockState == CursorLockMode.None && Input.GetKeyDown(KeyCode.Z))
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -109,6 +112,15 @@ public class PlayerMovement : MonoBehaviour
     {
         HandleMovement();
         HandleRotation();
+    }
+
+    if (Input.GetKeyDown(KeyCode.BackQuote))
+    {
+        roomsMenuOpen = !roomsMenuOpen;
+        rooms.SetActive(roomsMenuOpen);
+        canvasObject.SetActive(!roomsMenuOpen);
+        Cursor.visible = roomsMenuOpen;
+        Cursor.lockState = roomsMenuOpen ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
     ApplyGravity();

@@ -8,12 +8,6 @@ public class CameraManager : MonoBehaviour
         // Function to reinstantiate the camera at specific coordinates
         public static void ReinstantiateCamera(Vector3 position, Quaternion rotation, Transform playerTransform = null)
         {
-            // Destroy the current main camera
-            Camera currentCamera = Camera.main;
-            if (currentCamera != null)
-            {
-                Destroy(currentCamera.gameObject);
-            }
 
             // Instantiate a new camera from the prefab at the specified coordinates
             GameObject newCamera = Instantiate(cameraPrefab, position, rotation);
