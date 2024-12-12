@@ -821,6 +821,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47158f95f6a5c2745b8ab8f890480685, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Multiplayer: {fileID: 0}
+  _uidString: 3ca9b329-00ff-4e8d-96f9-ae8157f8b908
+  Reliability: 1
+  LocalMethodBehavior: 1
   cardPrefab: {fileID: 2534271353859667840, guid: 05eea4e4386d3fd49a6a432127cd201a, type: 3}
 --- !u!114 &1208948972
 MonoBehaviour:

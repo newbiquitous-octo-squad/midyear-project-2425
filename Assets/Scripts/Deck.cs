@@ -36,7 +36,7 @@ void Start()
             var cardObject = Instantiate(cardPrefab, new Vector3(poopoo,0,0), Quaternion.identity);
             var card = cardObject.AddComponent<Card>();
             card.InitializeCard(toReturn.suit, toReturn.number);
-            poopoo++;
+           
 
             return toReturn;
         }
@@ -63,6 +63,7 @@ void Start()
         {
             var drawnCard = DrawCard();
             InvokeRemoteMethod("DrawCard");
+            poopoo++;
             if (drawnCard.HasValue)
             {
                 Debug.Log($"Drawn Card - Suit: {drawnCard.Value.suit}, Number: {drawnCard.Value.number}");
