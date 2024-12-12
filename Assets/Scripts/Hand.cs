@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Cards;
 public class Hand : MonoBehaviour
 {
     List<Card> hand;

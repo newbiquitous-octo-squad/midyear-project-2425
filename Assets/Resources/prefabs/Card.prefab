@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8103086539549101955}
   - component: {fileID: 5073927172981192024}
+  - component: {fileID: -5447580421638249941}
   m_Layer: 0
   m_Name: Card
   m_TagString: Untagged
@@ -46,9 +47,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 457fe7ff2dab3a84284d7a66d06e032d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardSuit: heart
+  cardSuit: Heart
   cardNumber: 2
-  cardImage: {fileID: 0}
+--- !u!114 &-5447580421638249941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2534271353859667840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1312809854, guid: 0ae8d181602a00248a82f64a684a1c88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Multiplayer: {fileID: 0}
+  _uidString: 3a3bc0b5-7ba4-458a-a495-df2ae1fe36f3
+  BucketBehaviors:
+  - Name: Min
+    NetLOD: 0
+    Frequency: -1
+  - Name: Low
+    NetLOD: 1
+    Frequency: 0
+  - Name: Mid
+    NetLOD: 2
+    Frequency: 0
+  - Name: High
+    NetLOD: 3
+    Frequency: 0
+  - Name: Max
+    NetLOD: 4
+    Frequency: 120
+  Reliability: 2
+  UseGlobalPosition: 0
+  OnlySyncFromRoomOwner: 0
+  refreshRate: 30
+  SyncedAxes: 511
 --- !u!1001 &1286259664249019956
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -112,7 +147,7 @@ PrefabInstance:
     - target: {fileID: -1504981713932161579, guid: 0464afc39207ab540b94807b2273e3e5, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: dccfaf3632e47894f93a33a99823f3b3, type: 2}
+      objectReference: {fileID: 2100000, guid: 6d49fb7484054c34fb70c4242273c71d, type: 2}
     - target: {fileID: -927199367670048503, guid: 0464afc39207ab540b94807b2273e3e5, type: 3}
       propertyPath: m_Name
       value: BackOfCard
