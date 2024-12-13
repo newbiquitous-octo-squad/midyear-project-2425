@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using Cards;
 using NUnit.Framework.Internal;
+using deckSpace;
 
 public class Hand : MonoBehaviour
 {
@@ -9,11 +10,13 @@ public class Hand : MonoBehaviour
     private float shift = 0.1f;
     public GameObject cardPrefab;
     public GameObject handObject;
+    private Deck deck;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         hand = new List<Card>();
+        deck = GameObject.Find("Deck").GetComponent<Deck>();
     }
 
     // Update is called once per frame
@@ -21,7 +24,8 @@ public class Hand : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.J))
         {
-            AddCard("Heart", 2);
+            var card = deck.DrawCard();
+            AddCard(card.Value.suit, card.Value.number);
         }
 
         if (Input.GetKeyDown(KeyCode.H)) ShiftLeft();
@@ -49,7 +53,7 @@ public class Hand : MonoBehaviour
         hand.Add(card);
             
         shift += 0.1f;
-            
+
         // foreach (var c in hand)
         // {
         //     Debug.Log($"Suit: {c.cardSuit}, Number: {c.cardNumber}");
