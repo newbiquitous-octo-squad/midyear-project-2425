@@ -35,17 +35,15 @@ namespace deckSpace
             }
         }
 
-        [SynchronizableMethod]
         public (string suit, int number)? DrawCard()
         {
             if (deckList.Count > 0)
             {
                 var toReturn = deckList[^1];
-                deckList.Remove(toReturn);
+                BroadcastRemoteMethod("RemoveCard");
                 var cardObject = Instantiate(cardPrefab, new Vector3(poopoo, 0, 0), Quaternion.identity);
                 var card = cardObject.AddComponent<Card>();
                 card.InitializeCard(toReturn.suit, toReturn.number);
-
 
                 return toReturn;
             }
@@ -57,6 +55,14 @@ namespace deckSpace
         }
 
         [SynchronizableMethod]
+        public void RemoveCard()
+        {
+            if (deckList.Count > 0)
+            {
+                deckList.Remove(deckList[^1]);
+            }
+        }
+
         public void Shuffle()
         {
             Random r = new();
@@ -65,6 +71,15 @@ namespace deckSpace
                 var n = r.Next(i, deckList.Count);
                 (deckList[i], deckList[n]) = (deckList[n], deckList[i]);
             }
+
+            object[] order = { deckList };
+            InvokeRemoteMethod("SetOrder", parameters: order);
+        }
+
+        [SynchronizableMethod]
+        public void SetOrder(List<(string suit, int number)> order)
+        {
+            deckList = order;
         }
 
         void Update()
@@ -72,7 +87,6 @@ namespace deckSpace
             if (Input.GetKeyDown(KeyCode.K))
             {
                 var drawnCard = DrawCard();
-                InvokeRemoteMethod("DrawCard");
                 poopoo++;
                 if (drawnCard.HasValue)
                 {
@@ -82,7 +96,7 @@ namespace deckSpace
 
             if (Input.GetKeyDown(KeyCode.C))
             {
-                BroadcastRemoteMethod("Shuffle");
+                Shuffle();
             }
         }
     }
