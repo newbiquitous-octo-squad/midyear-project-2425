@@ -41,9 +41,6 @@ namespace deckSpace
             {
                 var toReturn = deckList[^1];
                 BroadcastRemoteMethod("RemoveCard");
-                var cardObject = Instantiate(cardPrefab, new Vector3(poopoo, 0, 0), Quaternion.identity);
-                var card = cardObject.AddComponent<Card>();
-                card.InitializeCard(toReturn.suit, toReturn.number);
 
                 return toReturn;
             }
@@ -87,9 +84,12 @@ namespace deckSpace
             if (Input.GetKeyDown(KeyCode.K))
             {
                 var drawnCard = DrawCard();
-                poopoo++;
                 if (drawnCard.HasValue)
                 {
+                    var cardObject = Instantiate(cardPrefab, new Vector3(poopoo, 0, 0), Quaternion.identity);
+                    var card = cardObject.AddComponent<Card>();
+                    card.InitializeCard(drawnCard.Value.suit, drawnCard.Value.number);
+                    poopoo++;
                     Debug.Log($"Drawn Card - Suit: {drawnCard.Value.suit}, Number: {drawnCard.Value.number}");
                 }
             }
