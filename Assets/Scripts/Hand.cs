@@ -10,7 +10,7 @@ using Avatar = Alteruna.Avatar;
 public class Hand : AttributesSync
 {
     List<Card> hand;
-    private float shift = 0.1f;
+    private int center;
     public GameObject cardPrefab;
     public GameObject handObject;
     private Deck deck;
@@ -33,55 +33,72 @@ public class Hand : AttributesSync
         {
             deck = GameObject.Find("Deck(Clone)").GetComponent<Deck>();
             var card = deck.DrawCard();
+            if (card == null) return;
             AddCard(card.Value.suit, card.Value.number);
             object[] parameters = { card.Value.suit, card.Value.number };
             InvokeRemoteMethod("AddCard", parameters: parameters);
         }
 
-        if (Input.GetKeyDown(KeyCode.H)) ShiftLeft();
-    }
-
-    [SynchronizableMethod]
-    private void ShiftLeft()
-    {
-        foreach (var card in hand)
+        if (Input.GetKeyDown(KeyCode.Comma))
         {
-            card.transform.localPosition = new Vector3(card.transform.localPosition.x - 0.1f, 0, 0);
+            center = Mathf.Max(0, center - 1);
+            BroadcastMessage("Reposition");
         }
+
+        if (Input.GetKeyDown(KeyCode.Period))
+        {
+            center = Mathf.Min(hand.Count-1, center + 1);
+            BroadcastMessage("Reposition");
+        }
+
     }
 
     [SynchronizableMethod]
     public void AddCard(string suit, int number)
     {
-        ShiftLeft();
-            
         var cardObject = Instantiate(cardPrefab, Vector3.zero, Quaternion.identity);
         cardObject.transform.SetParent(handObject.transform);
-        cardObject.transform.localPosition = new Vector3(shift, 0, 0);
+        cardObject.transform.localPosition = new Vector3(0, 0, 0);
         cardObject.transform.localRotation = Quaternion.identity;
             
         var card = cardObject.AddComponent<Card>();
         card.InitializeCard(suit, number);
         hand.Add(card);
-            
-        shift += 0.1f;
-
-        // foreach (var c in hand)
-        // {
-        //     Debug.Log($"Suit: {c.cardSuit}, Number: {c.cardNumber}");
-        // }
+        if (hand.Count % 2 == 0)
+        {
+            center++;
+        }
+        
+        Reposition();
     }
 
-    // public void AddCard(Card card)
-    // {
-    //     hand.Add(card);
-    //     hand.Sort(delegate(Card x, Card y)
-    //     {
-    //         return x.cardNumber - y.cardNumber;
-    //     });
-    //     
-    //     
-    // }
+    // TODO: Proper repositioning synchronization
+    [SynchronizableMethod]
+    void Reposition()
+    {
+        hand[center].transform.localPosition = Vector3.zero;
+        hand[center].transform.localRotation = Quaternion.identity;
+        for (var i = center - 1; i >= 0; i--)
+        {
+            var dist = center - i;
+            var prevPos = hand[i + 1].transform.localPosition;
+            hand[i].transform.localPosition = new Vector3(prevPos.x-0.1f/dist, prevPos.y-0.005f/dist, prevPos.z+0.005f/dist);
+        }
+        for (var i = center + 1; i < hand.Count; i++)
+        {
+            var dist = i - center;
+            var prevPos = hand[i - 1].transform.localPosition;
+            hand[i].transform.localPosition = new Vector3(prevPos.x+0.1f/dist, prevPos.y-0.005f/dist, prevPos.z-0.005f/dist);
+        }
 
-    
+        // if (hand.Count > 1)
+        // {
+        //     foreach (var c in hand)
+        //     {
+        //         c.transform.localRotation = Quaternion.Euler(1, 0, 0);
+        //     }
+        //
+        // }
+
+    }
 }
