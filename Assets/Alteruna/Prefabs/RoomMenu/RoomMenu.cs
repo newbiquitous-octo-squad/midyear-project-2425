@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using Alteruna.Trinity;
+using deckSpace;
 
 
 namespace Alteruna
@@ -30,6 +31,9 @@ namespace Alteruna
 		private float _statusTextTime;
 		private int _roomI = -1;
 
+        private static GameObject deckPrefab;
+        private GameObject deck;
+
 
         private void Start()
 		{
@@ -40,7 +44,7 @@ namespace Alteruna
 
 			if (Multiplayer == null)
 			{
-				Debug.LogError("Unable to find a active object of type Multiplayer.");
+				Debug.LogError("Unable to find an active object of type Multiplayer.");
 				if (TitleText != null) TitleText.text = "Missing Multiplayer Component";
 				enabled = false;
 			}
@@ -62,9 +66,12 @@ namespace Alteruna
 
                 LeaveButton.onClick.AddListener(() =>
                 {
+                    if (Multiplayer.CurrentRoom.GetUserCount() == 1)
+                    {
+                        Debug.Log("Pleasdas");
+                        deck.GetComponent<Deck>().ResetDeck();
+                    }
                     Multiplayer.CurrentRoom?.Leave();
-                    CameraManager.ReinstantiateCamera(new Vector3(54.6f, 10, 0), Quaternion.Euler(0, 0, 0), transform.parent);
-					Debug.Log("skibidi");
                     _refreshTime = RefreshInterval;
                 });
 
@@ -93,7 +100,8 @@ namespace Alteruna
 
             StartButton.interactable = false;
 			LeaveButton.interactable = false;
-		}
+            deckPrefab = (GameObject) Resources.Load("prefabs/Deck", typeof(GameObject));
+        }
 
 		private void FixedUpdate()
 		{
@@ -198,10 +206,14 @@ namespace Alteruna
 
 		private void JoinedRoom(Multiplayer multiplayer, Room room, User user)
 		{
+			Debug.Log("Titan toiletmaster");
 			StartButton.interactable = false;
 			LeaveButton.interactable = true;
+			if (deck == null)
+                deck = Instantiate(deckPrefab, new Vector3(-2f, -0.625f, -0.62f), Quaternion.identity);
+            
 
-			if (TitleText != null)
+            if (TitleText != null)
 			{
 				TitleText.text = "In Room " + room.Name;
 			}
@@ -209,7 +221,7 @@ namespace Alteruna
 
 		private void LeftRoom(Multiplayer multiplayer)
 		{
-			_roomI = -1;
+            _roomI = -1;
 
 			StartButton.interactable = true;
 			LeaveButton.interactable = false;
@@ -218,7 +230,10 @@ namespace Alteruna
 			{
 				TitleText.text = "Rooms";
 			}
-		}
+
+            CameraManager.ReinstantiateCamera(new Vector3(54.6f, 10, 0), Quaternion.Euler(0, 0, 0), transform.parent);
+            Debug.Log("skibidi");
+        }
 
 		private void UpdateList(Multiplayer multiplayer)
 		{

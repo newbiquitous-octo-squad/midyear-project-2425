@@ -21,8 +21,7 @@ public class Hand : AttributesSync
     void Start()
     {
         hand = new List<Card>();
-        deck = GameObject.Find("Deck").GetComponent<Deck>();
-        _avatar = transform.parent.GetComponent<Avatar>(); 
+        _avatar = transform.parent.GetComponent<Avatar>();
     }
 
     // Update is called once per frame
@@ -32,6 +31,7 @@ public class Hand : AttributesSync
 
         if (Input.GetKeyDown(KeyCode.J))
         {
+            deck = GameObject.Find("Deck(Clone)").GetComponent<Deck>();
             var card = deck.DrawCard();
             AddCard(card.Value.suit, card.Value.number);
             object[] parameters = { card.Value.suit, card.Value.number };
