@@ -15,6 +15,7 @@ public class Hand : AttributesSync
     public GameObject handObject;
     private Deck deck;
     private Avatar _avatar;
+    private int compressionThreshold = 10;
     
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -77,28 +78,27 @@ public class Hand : AttributesSync
     void Reposition()
     {
         hand[center].transform.localPosition = Vector3.zero;
-        hand[center].transform.localRotation = Quaternion.identity;
+        hand[center].transform.localRotation = Quaternion.Euler(90, 270, 90);
+        var prevRot = 90f;
         for (var i = center - 1; i >= 0; i--)
         {
-            var dist = center - i;
+            var divideFactor = hand.Count < compressionThreshold ? 1 : center - i;
             var prevPos = hand[i + 1].transform.localPosition;
-            hand[i].transform.localPosition = new Vector3(prevPos.x-0.1f/dist, prevPos.y-0.005f/dist, prevPos.z+0.005f/dist);
+            hand[i].transform.localPosition = new Vector3(prevPos.x - 0.1f / divideFactor, prevPos.y - 0.02f / divideFactor,
+                prevPos.z + 0.005f / divideFactor);
+            hand[i].transform.localRotation = Quaternion.Euler(prevRot + 5.0f / Mathf.Sqrt(divideFactor), 270, 90);
+            prevRot += 5.0f / Mathf.Sqrt(divideFactor);
         }
+
+        prevRot = 90f;
         for (var i = center + 1; i < hand.Count; i++)
         {
-            var dist = i - center;
+            var divideFactor = hand.Count < compressionThreshold ? 1 : i - center;
             var prevPos = hand[i - 1].transform.localPosition;
-            hand[i].transform.localPosition = new Vector3(prevPos.x+0.1f/dist, prevPos.y-0.005f/dist, prevPos.z-0.005f/dist);
+            hand[i].transform.localPosition = new Vector3(prevPos.x + 0.1f / divideFactor, prevPos.y - 0.02f / divideFactor,
+                prevPos.z - 0.005f / divideFactor);
+            hand[i].transform.localRotation = Quaternion.Euler(prevRot - 5.0f / Mathf.Sqrt(divideFactor), 270, 90);
+            prevRot -= 5.0f / Mathf.Sqrt(divideFactor);
         }
-
-        // if (hand.Count > 1)
-        // {
-        //     foreach (var c in hand)
-        //     {
-        //         c.transform.localRotation = Quaternion.Euler(1, 0, 0);
-        //     }
-        //
-        // }
-
     }
 }
