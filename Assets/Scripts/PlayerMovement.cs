@@ -9,9 +9,7 @@ using UnityEngine.Rendering;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Base setup")]
-    public float walkingSpeed = 7.5f;
-    public float runningSpeed = 11.5f;
-    public float jumpSpeed = 8.0f;
+    public float walkingSpeed = 3.5f;
     public float gravity = 20.0f;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
@@ -128,21 +126,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMovement()
     {
-        bool isRunning = Input.GetKey(KeyCode.LeftShift);
-
         Vector3 forward = transform.TransformDirection(Vector3.forward);
         Vector3 right = transform.TransformDirection(Vector3.right);
 
-        float curSpeedX = canMove ? (isRunning ? runningSpeed : walkingSpeed) * Input.GetAxis("Vertical") : 0;
-        float curSpeedY = canMove ? (isRunning ? runningSpeed : walkingSpeed) * Input.GetAxis("Horizontal") : 0;
+        float curSpeedX = canMove ? walkingSpeed * Input.GetAxis("Vertical") : 0;
+        float curSpeedY = canMove ? walkingSpeed * Input.GetAxis("Horizontal") : 0;
         float movementDirectionY = moveDirection.y;
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-        if (Input.GetButton("Jump") && canMove && characterController.isGrounded)
-        {
-            moveDirection.y = jumpSpeed;
-        }
-        else
+        if (!characterController.isGrounded)
         {
             moveDirection.y = movementDirectionY;
         }

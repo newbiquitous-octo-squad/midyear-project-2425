@@ -15,7 +15,7 @@ public class Hand : AttributesSync
     public GameObject handObject;
     private Deck deck;
     private Avatar _avatar;
-    private int compressionThreshold = 10;
+    private int compressionThreshold = 7;
     
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
