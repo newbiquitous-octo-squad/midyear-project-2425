@@ -210,7 +210,7 @@ namespace Alteruna
 			StartButton.interactable = false;
 			LeaveButton.interactable = true;
 			if (deck == null)
-                deck = Instantiate(deckPrefab, new Vector3(-2f, -0.625f, -0.62f), Quaternion.identity);
+                deck = Instantiate(deckPrefab, new Vector3(-2f, -0.10f, -0.62f), Quaternion.identity);
             
 
             if (TitleText != null)

@@ -13,6 +13,8 @@ namespace deckSpace
         public GameObject cardPrefab;
         [SynchronizableField] private int poopoo = 0;
 
+        private Rigidbody rigidbody;
+        
         [SynchronizableField] private List<(string suit, int number)> deckList = new()
         {
             ("Heart", 1), ("Heart", 2), ("Heart", 3), ("Heart", 4), ("Heart", 5), ("Heart", 6), ("Heart", 7),
@@ -28,11 +30,15 @@ namespace deckSpace
 
         void Start()
         {
+            rigidbody = gameObject.GetComponent<Rigidbody>();
+            if (rigidbody == null)
+            {
+                rigidbody = gameObject.AddComponent<Rigidbody>();
+            }
 
-            //foreach (var card in deckList)
-            //{
-            //    Debug.Log($"Suit: {card.suit}, Number: {card.number}");
-            //}
+            rigidbody.useGravity = true;
+            
+            rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         }
 
         public (string suit, int number)? DrawCard()
@@ -114,6 +120,7 @@ namespace deckSpace
             {
                 Shuffle();
             }
+            
         }
     }
 
