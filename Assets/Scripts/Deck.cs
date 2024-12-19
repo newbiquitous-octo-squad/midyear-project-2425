@@ -14,8 +14,9 @@ namespace deckSpace
         [SynchronizableField] private int poopoo = 0;
 
         private Rigidbody rigidbody;
-        
-        [SynchronizableField] private List<(string suit, int number)> deckList = new()
+
+        [SynchronizableField]
+        private List<(string suit, int number)> deckList = new()
         {
             ("Heart", 1), ("Heart", 2), ("Heart", 3), ("Heart", 4), ("Heart", 5), ("Heart", 6), ("Heart", 7),
             ("Heart", 8), ("Heart", 9), ("Heart", 10), ("Heart", 11), ("Heart", 12), ("Heart", 13),
@@ -37,7 +38,7 @@ namespace deckSpace
             }
 
             rigidbody.useGravity = true;
-            
+
             rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         }
 
@@ -63,6 +64,14 @@ namespace deckSpace
             if (deckList.Count > 0)
             {
                 deckList.Remove(deckList[^1]);
+                if (deckList.Count > 0)
+                {
+                    transform.localScale = new Vector3(0.05f, deckList.Count / 1040f, 0.05f);
+                }
+                else
+                {
+                    transform.localScale = Vector3.zero;
+                }
             }
         }
 
@@ -120,7 +129,7 @@ namespace deckSpace
             {
                 Shuffle();
             }
-            
+
         }
     }
 
