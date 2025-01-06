@@ -72,13 +72,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-<<<<<<< Updated upstream
-=======
   hand: []
   cardPrefab: {fileID: 2534271353859667840, guid: 05eea4e4386d3fd49a6a432127cd201a, type: 3}
   handObject: {fileID: 9012055318876615066}
->>>>>>> Stashed changes
---- !u!1001 &2206562327406695932
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
