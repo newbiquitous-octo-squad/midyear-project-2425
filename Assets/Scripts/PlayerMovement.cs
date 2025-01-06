@@ -16,9 +16,9 @@ public class PlayerMovement : NetworkBehaviour
     public float lookXLimit = 45.0f;
 
 
-    CharacterController _characterController;
-    Vector3 _moveDirection = Vector3.zero;
-    float _rotationX = 0;
+    private CharacterController _characterController;
+    private Vector3 _moveDirection = Vector3.zero;
+    private float _rotationX = 0;
 
     [HideInInspector]
     public bool canMove = true;

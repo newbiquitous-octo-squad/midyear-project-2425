@@ -7,129 +7,139 @@ using Random = System.Random;
 namespace deckSpace
 {
 
+    enum Suit
+    {
+        HEARTS,
+        DIAMONDS,
+        SPADES,
+        CLUBS
+    }
+
+    struct CardType : INetworkSerializable, System.IEquatable<CardType>
+    {
+        public Suit Suit;
+        public int Number;
+        
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            if (serializer.IsReader)
+            {
+                var reader = serializer.GetFastBufferReader();
+                reader.ReadValueSafe(out Suit);
+                reader.ReadValueSafe(out Number);
+            }
+            else
+            {
+                var writer = serializer.GetFastBufferWriter();
+                writer.WriteValueSafe(Suit);
+                writer.WriteValueSafe(Number);
+            }
+        }
+
+        public bool Equals(CardType other)
+        {
+            return Suit == other.Suit && Number == other.Number;
+        }
+    }
+
      public class Deck : NetworkBehaviour
      {
-//         public GameObject cardPrefab;
-//         [SynchronizableField] private int poopoo = 0;
-//
-//         private Rigidbody rigidbody;
-//
-//         [SynchronizableField]
-//         private List<(string suit, int number)> deckList = new()
-//         {
-//             ("Heart", 1), ("Heart", 2), ("Heart", 3), ("Heart", 4), ("Heart", 5), ("Heart", 6), ("Heart", 7),
-//             ("Heart", 8), ("Heart", 9), ("Heart", 10), ("Heart", 11), ("Heart", 12), ("Heart", 13),
-//             ("Diamond", 1), ("Diamond", 2), ("Diamond", 3), ("Diamond", 4), ("Diamond", 5), ("Diamond", 6),
-//             ("Diamond", 7), ("Diamond", 8), ("Diamond", 9), ("Diamond", 10), ("Diamond", 11), ("Diamond", 12),
-//             ("Diamond", 13),
-//             ("Club", 1), ("Club", 2), ("Club", 3), ("Club", 4), ("Club", 5), ("Club", 6), ("Club", 7), ("Club", 8),
-//             ("Club", 9), ("Club", 10), ("Club", 11), ("Club", 12), ("Club", 13),
-//             ("Spade", 1), ("Spade", 2), ("Spade", 3), ("Spade", 4), ("Spade", 5), ("Spade", 6), ("Spade", 7),
-//             ("Spade", 8), ("Spade", 9), ("Spade", 10), ("Spade", 11), ("Spade", 12), ("Spade", 13)
-//         };
-//
-//         void Start()
-//         {
-//             rigidbody = gameObject.GetComponent<Rigidbody>();
-//             if (rigidbody == null)
-//             {
-//                 rigidbody = gameObject.AddComponent<Rigidbody>();
-//             }
-//
-//             rigidbody.useGravity = true;
-//
-//             rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-//         }
-//
-//         public (string suit, int number)? DrawCard()
-//         {
-//             if (deckList.Count > 0)
-//             {
-//                 var toReturn = deckList[^1];
-//                 BroadcastRemoteMethod("RemoveCard");
-//
-//                 return toReturn;
-//             }
-//             else
-//             {
-//                 Debug.LogWarning("The deck is empty!");
-//                 return null;
-//             }
-//         }
-//
-//         [SynchronizableMethod]
-//         public void RemoveCard()
-//         {
-//             if (deckList.Count > 0)
-//             {
-//                 deckList.Remove(deckList[^1]);
-//                 if (deckList.Count > 0)
-//                 {
-//                     transform.localScale = new Vector3(0.05f, deckList.Count / 1040f, 0.05f);
-//                 }
-//                 else
-//                 {
-//                     transform.localScale = Vector3.zero;
-//                 }
-//             }
-//         }
-//
-//         public void Shuffle()
-//         {
-//             Random r = new();
-//             for (var i = 0; i < deckList.Count; i++)
-//             {
-//                 var n = r.Next(i, deckList.Count);
-//                 (deckList[i], deckList[n]) = (deckList[n], deckList[i]);
-//             }
-//
-//             object[] order = { deckList };
-//             InvokeRemoteMethod("SetOrder", parameters: order);
-//         }
-//
-//         [SynchronizableMethod]
-//         public void SetOrder(List<(string suit, int number)> order)
-//         {
-//             deckList = order;
-//         }
-//
-//         public void ResetDeck()
-//         {
-//             deckList = new()
-//             {
-//                 ("Heart", 1), ("Heart", 2), ("Heart", 3), ("Heart", 4), ("Heart", 5), ("Heart", 6), ("Heart", 7),
-//                 ("Heart", 8), ("Heart", 9), ("Heart", 10), ("Heart", 11), ("Heart", 12), ("Heart", 13),
-//                 ("Diamond", 1), ("Diamond", 2), ("Diamond", 3), ("Diamond", 4), ("Diamond", 5), ("Diamond", 6),
-//                 ("Diamond", 7), ("Diamond", 8), ("Diamond", 9), ("Diamond", 10), ("Diamond", 11), ("Diamond", 12),
-//                 ("Diamond", 13),
-//                 ("Club", 1), ("Club", 2), ("Club", 3), ("Club", 4), ("Club", 5), ("Club", 6), ("Club", 7), ("Club", 8),
-//                 ("Club", 9), ("Club", 10), ("Club", 11), ("Club", 12), ("Club", 13),
-//                 ("Spade", 1), ("Spade", 2), ("Spade", 3), ("Spade", 4), ("Spade", 5), ("Spade", 6), ("Spade", 7),
-//                 ("Spade", 8), ("Spade", 9), ("Spade", 10), ("Spade", 11), ("Spade", 12), ("Spade", 13)
-//             };
-//         }
-//
-//         void Update()
-//         {
-//             if (Input.GetKeyDown(KeyCode.K))
-//             {
-//                 var drawnCard = DrawCard();
-//                 if (drawnCard.HasValue)
-//                 {
-//                     var cardObject = Instantiate(cardPrefab, new Vector3(poopoo, 0, 0), Quaternion.identity);
-//                     var card = cardObject.AddComponent<Card>();
-//                     card.InitializeCard(drawnCard.Value.suit, drawnCard.Value.number);
-//                     poopoo++;
-//                     Debug.Log($"Drawn Card - Suit: {drawnCard.Value.suit}, Number: {drawnCard.Value.number}");
-//                 }
-//             }
-//
-//             if (Input.GetKeyDown(KeyCode.C))
-//             {
-//                 Shuffle();
-//             }
-//
-//         }
+         public GameObject cardPrefab;
+
+         private Rigidbody _rigidbody;
+
+         private (Suit suit, int number)[] _defaultDeck = {
+             (Suit.HEARTS, 1), (Suit.HEARTS, 2), (Suit.HEARTS, 3), (Suit.HEARTS, 4), (Suit.HEARTS, 5), (Suit.HEARTS, 6), (Suit.HEARTS, 7),
+             (Suit.HEARTS, 8), (Suit.HEARTS, 9), (Suit.HEARTS, 10), (Suit.HEARTS, 11), (Suit.HEARTS, 12), (Suit.HEARTS, 13),
+             (Suit.DIAMONDS, 1), (Suit.DIAMONDS, 2), (Suit.DIAMONDS, 3), (Suit.DIAMONDS, 4), (Suit.DIAMONDS, 5), (Suit.DIAMONDS, 6),
+             (Suit.DIAMONDS, 7), (Suit.DIAMONDS, 8), (Suit.DIAMONDS, 9), (Suit.DIAMONDS, 10), (Suit.DIAMONDS, 11), (Suit.DIAMONDS, 12),
+             (Suit.DIAMONDS, 13),
+             (Suit.CLUBS, 1), (Suit.CLUBS, 2), (Suit.CLUBS, 3), (Suit.CLUBS, 4), (Suit.CLUBS, 5), (Suit.CLUBS, 6), (Suit.CLUBS, 7), (Suit.CLUBS, 8),
+             (Suit.CLUBS, 9), (Suit.CLUBS, 10), (Suit.CLUBS, 11), (Suit.CLUBS, 12), (Suit.CLUBS, 13),
+             (Suit.SPADES, 1), (Suit.SPADES, 2), (Suit.SPADES, 3), (Suit.SPADES, 4), (Suit.SPADES, 5), (Suit.SPADES, 6), (Suit.SPADES, 7),
+             (Suit.SPADES, 8), (Suit.SPADES, 9), (Suit.SPADES, 10), (Suit.SPADES, 11), (Suit.SPADES, 12), (Suit.SPADES, 13)
+         };
+         private NetworkList<CardType> _deckList = new();
+
+         void Awake()
+         {
+             _rigidbody = gameObject.GetComponent<Rigidbody>();
+             if (_rigidbody == null)
+             {
+                 _rigidbody = gameObject.AddComponent<Rigidbody>();
+             }
+
+             _rigidbody.useGravity = true;
+
+             _rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+         }
+
+         public override void OnNetworkSpawn()
+         {
+             // server adds default cards to initial deck
+             if (IsServer)
+             {
+                 ResetDeck();
+             }
+             
+             base.OnNetworkSpawn();
+         }
+
+         private CardType? DrawCard()
+         {
+             if (_deckList.Count > 0)
+             {
+                 var toReturn = _deckList[^1];
+                 RemoveCard();
+
+                 return toReturn;
+             }
+             else
+             {
+                 Debug.LogWarning("The deck is empty!");
+                 return null;
+             }
+         }
+
+         private void RemoveCard()
+         {
+             if (_deckList.Count <= 0) return;
+             
+             _deckList.Remove(_deckList[^1]);
+
+             transform.localScale = _deckList.Count > 0 ? new Vector3(0.05f, _deckList.Count / 1040f, 0.05f) : Vector3.zero;
+         }
+
+         private void Shuffle()
+         {
+             Random r = new();
+             for (var i = 0; i < _deckList.Count; i++)
+             {
+                 var n = r.Next(i, _deckList.Count);
+                 (_deckList[i], _deckList[n]) = (_deckList[n], _deckList[i]);
+             }
+
+         }
+
+         public void ResetDeck()
+         {
+             foreach (var card in _defaultDeck)
+             {
+                 CardType toAdd = new();
+                 toAdd.Suit = card.suit;
+                 toAdd.Number = card.number;
+                 _deckList.Add(toAdd);
+             }
+         }
+
+         void Update()
+         {
+             if (Input.GetKeyDown(KeyCode.C))
+             {
+                 Shuffle();
+             }
+
+         }
      }
 
 }
