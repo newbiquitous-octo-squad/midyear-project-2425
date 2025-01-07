@@ -1,6 +1,7 @@
 using System;
 using Unity.Netcode;
 using UnityEngine;
+using Screen = UnityEngine.Device.Screen;
 
 public class JoinGame : MonoBehaviour
 {
@@ -14,9 +15,10 @@ public class JoinGame : MonoBehaviour
     private void OnGUI()
     {
         GUI.color = Color.white;
-        GUILayout.BeginArea(new Rect(Screen.width / 2 - 150, Screen.height / 2 + 300,800,800));
+        GUILayout.BeginArea(new Rect(Screen.width/2 - 200, Screen.height / 1.5f,400,400));
         var style = new GUIStyle();
         style.fontSize = 60;
+        style.alignment = TextAnchor.MiddleCenter;
         
         
         if (!_networkManager.IsClient && !_networkManager.IsServer)
