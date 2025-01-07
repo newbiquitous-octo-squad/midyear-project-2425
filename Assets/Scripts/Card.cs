@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using deckSpace;
 using UnityEngine;
 using Unity.Netcode;
 //
@@ -9,7 +10,7 @@ namespace Cards
 
      public class Card : NetworkBehaviour
      {
-         private NetworkVariable<string> _cardSuit;
+         private NetworkVariable<Suit> _cardSuit;
          private NetworkVariable<int> _cardNumber;
 
          private void Awake()
@@ -26,13 +27,13 @@ namespace Cards
          }
 
          // Method to initialize the card
-         public void InitializeCard(string suit, int number)
+         public void InitializeCard(CardType card)
          {
-             _cardSuit.Value = suit;
-             _cardNumber.Value = number;
+             _cardSuit.Value = card.Suit;
+             _cardNumber.Value = card.Number;
 
              // Construct the material path based on the suit and number
-             var materialPath = $"Materials/{suit}{number}";
+             var materialPath = $"Materials/{_cardSuit}{_cardNumber}";
 
              // Load the material from the Resources folder
              var material = Resources.Load<Material>(materialPath);

@@ -7,7 +7,7 @@ using Random = System.Random;
 namespace deckSpace
 {
 
-    enum Suit
+    public enum Suit
     {
         HEARTS,
         DIAMONDS,
@@ -15,7 +15,7 @@ namespace deckSpace
         CLUBS
     }
 
-    struct CardType : INetworkSerializable, System.IEquatable<CardType>
+    public struct CardType : INetworkSerializable, System.IEquatable<CardType>
     {
         public Suit Suit;
         public int Number;
@@ -85,7 +85,7 @@ namespace deckSpace
              base.OnNetworkSpawn();
          }
 
-         private CardType? DrawCard()
+         public CardType? DrawCard()
          {
              if (_deckList.Count > 0)
              {

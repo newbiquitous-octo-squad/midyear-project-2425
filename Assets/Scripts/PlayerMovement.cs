@@ -14,13 +14,13 @@ public class PlayerMovement : NetworkBehaviour
     public float gravity = 20.0f;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
+    public GameObject handPrefab;
 
 
     private CharacterController _characterController;
     private Vector3 _moveDirection = Vector3.zero;
     private float _rotationX = 0;
 
-    [HideInInspector]
     public bool canMove = true;
 
     [SerializeField]
@@ -28,6 +28,7 @@ public class PlayerMovement : NetworkBehaviour
     private Camera _playerCamera;
 
     private GameObject _crosshair;
+    private GameObject _hand;
 
     void Awake()
     {
@@ -44,9 +45,19 @@ public class PlayerMovement : NetworkBehaviour
         {
             Camera.main!.enabled = false;
             _playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y + cameraYOffset, transform.position.z);
+            CreateHandRpc();
             ResetCursorState();
         }
         base.OnNetworkSpawn();
+    }
+
+    [Rpc(SendTo.Server)] 
+    // note that rpc methods must end with "Rpc". why? idk the compiler demands it tho
+    // also note that this code will be run on the server.
+    void CreateHandRpc()
+    {
+        var hand = NetworkManager.SpawnManager.InstantiateAndSpawn(handPrefab.GetComponent<NetworkObject>());
+        hand.GetComponent<NetworkObject>().TrySetParent(transform);
     }
 
     void Update()

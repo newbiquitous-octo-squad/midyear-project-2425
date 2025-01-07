@@ -8,92 +8,80 @@ using Unity.Netcode;
 
 public class Hand : NetworkBehaviour
 {
-     [SerializeField] private List<Card> hand;
-     private int center;
+    private NetworkList<CardType> _hand = new();
+     private int _center;
      public GameObject cardPrefab;
-     public GameObject handObject;
-     private Deck deck;
-     private int compressionThreshold = 7;
+     private Deck _deck;
+     private int _compressionThreshold = 7;
      
-     
-     // Start is called once before the first execution of Update after the MonoBehaviour is created
-     void Start()
-     {
-         hand = new List<Card>();
-     }
-
-     // Update is called once per frame
      void Update()
      {
          if (!IsOwner) return;
-
+    
          if (Input.GetKeyDown(KeyCode.J))
          {
-             deck = GameObject.Find("Deck(Clone)").GetComponent<Deck>();
-             var card = deck.DrawCard();
-             if (card == null) return;
-             AddCard(card.Value.suit, card.Value.number);
-             // object[] parameters = { card.Value.suit, card.Value.number };
-             // InvokeRemoteMethod("AddCard", parameters: parameters);
+             _deck = GameObject.Find("Deck(Clone)").GetComponent<Deck>();
+             var card = _deck.DrawCard();
+             
+             if (card.HasValue) AddCard(card.Value);
          }
-
+    
          if (Input.GetKeyDown(KeyCode.Comma))
          {
-             center = Mathf.Max(0, center - 1);
-             // BroadcastMessage("Reposition");
+             _center = Mathf.Max(0, _center - 1);
+             Reposition();
          }
-
+    
          if (Input.GetKeyDown(KeyCode.Period))
          {
-             center = Mathf.Min(hand.Count-1, center + 1);
-             // BroadcastMessage("Reposition");
+             _center = Mathf.Min(_hand.Count-1, _center + 1);
+             Reposition();
          }
-
+    
      }
-
-    public void AddCard(string suit, int number)
+    
+    public void AddCard(CardType card)
     {
         var cardObject = Instantiate(cardPrefab, Vector3.zero, Quaternion.identity);
-        cardObject.transform.SetParent(handObject.transform);
+        cardObject.transform.SetParent(transform);
         cardObject.transform.localPosition = new Vector3(0, 0, 0);
         cardObject.transform.localRotation = Quaternion.identity;
             
-        var card = cardObject.AddComponent<Card>();
-        card.InitializeCard(suit, number);
-        hand.Add(card);
-        if (hand.Count % 2 == 0)
+        var cardComponent = cardObject.AddComponent<Card>();
+        cardComponent.InitializeCard(card);
+        _hand.Add(card);
+        if (_hand.Count % 2 == 0)
         {
-            center++;
+            _center++;
         }
         
         Reposition();
     }
-
-    // TODO: Proper repositioning synchronization
+    
     void Reposition()
     {
-        hand[center].transform.localPosition = Vector3.zero;
-        hand[center].transform.localRotation = Quaternion.Euler(90, 270, 90);
+        transform.GetChild(_center).transform.localPosition = Vector3.zero;
+        transform.GetChild(_center).transform.localRotation = Quaternion.Euler(90, 270, 90);
         var prevRot = 90f;
-        for (var i = center - 1; i >= 0; i--)
+        for (var i = _center - 1; i >= 0; i--)
         {
-            var divideFactor = hand.Count < compressionThreshold ? 1 : center - i;
-            var prevPos = hand[i + 1].transform.localPosition;
-            hand[i].transform.localPosition = new Vector3(prevPos.x - 0.1f / divideFactor, prevPos.y - 0.02f / divideFactor,
+            var divideFactor = _hand.Count < _compressionThreshold ? 1 : _center - i;
+            var prevPos = transform.GetChild(i + 1).transform.localPosition;
+            transform.GetChild(i).transform.localPosition = new Vector3(prevPos.x - 0.1f / divideFactor, prevPos.y - 0.02f / divideFactor,
                 prevPos.z + 0.005f / divideFactor);
-            hand[i].transform.localRotation = Quaternion.Euler(prevRot + 5.0f / Mathf.Sqrt(divideFactor), 270, 90);
+            transform.GetChild(i).transform.localRotation = Quaternion.Euler(prevRot + 5.0f / Mathf.Sqrt(divideFactor), 270, 90);
             prevRot += 5.0f / Mathf.Sqrt(divideFactor);
         }
-
+    
         prevRot = 90f;
-        for (var i = center + 1; i < hand.Count; i++)
+        for (var i = _center + 1; i < _hand.Count; i++)
         {
-            var divideFactor = hand.Count < compressionThreshold ? 1 : i - center;
-            var prevPos = hand[i - 1].transform.localPosition;
-            hand[i].transform.localPosition = new Vector3(prevPos.x + 0.1f / divideFactor, prevPos.y - 0.02f / divideFactor,
+            var divideFactor = _hand.Count < _compressionThreshold ? 1 : i - _center;
+            var prevPos = transform.GetChild(i - 1).transform.localPosition;
+            transform.GetChild(i).transform.localPosition = new Vector3(prevPos.x + 0.1f / divideFactor, prevPos.y - 0.02f / divideFactor,
                 prevPos.z - 0.005f / divideFactor);
-            hand[i].transform.localRotation = Quaternion.Euler(prevRot - 5.0f / Mathf.Sqrt(divideFactor), 270, 90);
+            transform.GetChild(i).transform.localRotation = Quaternion.Euler(prevRot - 5.0f / Mathf.Sqrt(divideFactor), 270, 90);
             prevRot -= 5.0f / Mathf.Sqrt(divideFactor);
-         }
-     }
+        }
+    }
 }
