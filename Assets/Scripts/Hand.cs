@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
@@ -5,49 +6,69 @@ using Cards;
 using NUnit.Framework.Internal;
 using deckSpace;
 using Unity.Netcode;
+using UnityEngine.InputSystem;
 
 public class Hand : NetworkBehaviour
 {
     private NetworkList<CardType> _hand = new();
-     private int _center;
-     public GameObject cardPrefab;
-     private Deck _deck;
-     private int _compressionThreshold = 7;
-     
-     void Update()
-     {
-         if (!IsOwner) return;
-    
-         if (Input.GetKeyDown(KeyCode.J))
-         {
-             _deck = GameObject.Find("Deck(Clone)").GetComponent<Deck>();
-             var card = _deck.DrawCard();
-             
-             if (card.HasValue) AddCard(card.Value);
-         }
-    
-         if (Input.GetKeyDown(KeyCode.Comma))
-         {
-             _center = Mathf.Max(0, _center - 1);
-             Reposition();
-         }
-    
-         if (Input.GetKeyDown(KeyCode.Period))
-         {
-             _center = Mathf.Min(_hand.Count-1, _center + 1);
-             Reposition();
-         }
-    
-     }
-    
+    private int _center;
+    public GameObject cardPrefab;
+    private Deck _deck;
+    private PlayerInput _input;
+    private int _compressionThreshold = 7;
+
+
+    private void Awake()
+    {
+        _input = GetComponent<PlayerInput>();
+        _deck = GameObject.Find("Deck").GetComponent<Deck>();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        _input.enabled = IsOwner;
+        base.OnNetworkSpawn();
+    }
+
+
+    void Update()
+    {
+        if (!IsOwner) return;
+
+        if (_input.actions["Draw"].triggered)
+        {
+            DrawCardToHandRpc();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Comma))
+        {
+            _center = Mathf.Max(0, _center - 1);
+            Reposition();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Period))
+        {
+            _center = Mathf.Min(_hand.Count - 1, _center + 1);
+            Reposition();
+        }
+
+    }
+
+    // TODO: WHEN REPLACING WITH GENERAL CLICK ON DECK, PASS THROUGH A RAYCAST AND HANDLE IN SERVER AAAAA POOP EMOJI DEVIL EMOJI (my window period broke)
+    [Rpc(SendTo.Server)]
+    public void DrawCardToHandRpc()
+    {
+        var card = _deck.DrawCard();
+        
+        if (card.HasValue) AddCard(card.Value);
+    }
+
     public void AddCard(CardType card)
     {
-        var cardObject = Instantiate(cardPrefab, Vector3.zero, Quaternion.identity);
-        cardObject.transform.SetParent(transform);
-        cardObject.transform.localPosition = new Vector3(0, 0, 0);
-        cardObject.transform.localRotation = Quaternion.identity;
-            
-        var cardComponent = cardObject.AddComponent<Card>();
+        var cardObject = NetworkManager.SpawnManager.InstantiateAndSpawn(cardPrefab.GetComponent<NetworkObject>(), OwnerClientId).gameObject;
+        cardObject.GetComponent<NetworkObject>().TrySetParent(transform);
+        
+        var cardComponent = cardObject.GetComponent<Card>();
         cardComponent.InitializeCard(card);
         _hand.Add(card);
         if (_hand.Count % 2 == 0)

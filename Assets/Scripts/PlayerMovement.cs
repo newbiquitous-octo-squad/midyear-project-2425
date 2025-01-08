@@ -45,7 +45,7 @@ public class PlayerMovement : NetworkBehaviour
         {
             Camera.main!.enabled = false;
             _playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y + cameraYOffset, transform.position.z);
-            CreateHandRpc();
+            CreateHandRpc(OwnerClientId);
             ResetCursorState();
         }
         base.OnNetworkSpawn();
@@ -54,10 +54,11 @@ public class PlayerMovement : NetworkBehaviour
     [Rpc(SendTo.Server)] 
     // note that rpc methods must end with "Rpc". why? idk the compiler demands it tho
     // also note that this code will be run on the server.
-    void CreateHandRpc()
+    void CreateHandRpc(ulong ownerId)
     {
-        var hand = NetworkManager.SpawnManager.InstantiateAndSpawn(handPrefab.GetComponent<NetworkObject>());
+        var hand = NetworkManager.SpawnManager.InstantiateAndSpawn(handPrefab.GetComponent<NetworkObject>(), ownerClientId: ownerId);
         hand.GetComponent<NetworkObject>().TrySetParent(transform);
+        hand.transform.localPosition += Vector3.forward;
     }
 
     void Update()

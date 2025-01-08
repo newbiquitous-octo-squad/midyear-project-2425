@@ -9,7 +9,7 @@ namespace deckSpace
 
     public enum Suit
     {
-        HEARTS,
+        HEARTS, 
         DIAMONDS,
         SPADES,
         CLUBS
