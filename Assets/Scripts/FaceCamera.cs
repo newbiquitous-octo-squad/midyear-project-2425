@@ -10,11 +10,12 @@ public class FaceCamera : NetworkBehaviour
     void Start()
     {
         // Find the main camera
-        _playerCamera = transform.parent.GetComponentInChildren<Camera>();
-
+        _playerCamera = Camera.main;
+        
         if (_playerCamera == null)
         {
             Debug.LogError("Main camera not found!");
+            Debug.Log(_playerCamera);
         }
     }
 
