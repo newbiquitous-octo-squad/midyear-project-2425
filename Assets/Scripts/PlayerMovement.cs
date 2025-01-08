@@ -2,97 +2,76 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework.Constraints;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.Rendering;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
     [Header("Base setup")]
     public float walkingSpeed = 3.5f;
     public float gravity = 20.0f;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
-    private bool roomsMenuOpen = false;
+    public GameObject handPrefab;
 
 
-    CharacterController characterController;
-    Vector3 moveDirection = Vector3.zero;
-    float rotationX = 0;
+    private CharacterController _characterController;
+    private Vector3 _moveDirection = Vector3.zero;
+    private float _rotationX = 0;
 
-    [HideInInspector]
     public bool canMove = true;
 
     [SerializeField]
     private float cameraYOffset = 0.4f;
-    private Camera playerCamera;
+    private Camera _playerCamera;
 
-    private Alteruna.Avatar _avatar;
-    private GameObject canvasObject;
+    private GameObject _crosshair;
+    private GameObject _hand;
 
-    private GameObject rooms;
-
-    void Start()
+    void Awake()
     {
-        _avatar = GetComponent<Alteruna.Avatar>();
+        _characterController = GetComponent<CharacterController>();
+        _playerCamera = GetComponentInChildren<Camera>();
+        _playerCamera.enabled = false;
+        _crosshair = GameObject.Find("Crosshair");
+    }
 
-        if (_avatar == null)
+    public override void OnNetworkSpawn()
+    {
+        _playerCamera.enabled = IsOwner;
+        if (IsOwner)
         {
-            Debug.LogError("No avatar ;(");
-            return;
+            Camera.main!.enabled = false;
+            _playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y + cameraYOffset, transform.position.z);
+            CreateHandRpc(OwnerClientId);
+            ResetCursorState();
         }
+        base.OnNetworkSpawn();
+    }
 
-        if (!_avatar.IsMe)
-            return;
-
-        canvasObject = GameObject.Find("Canvas");
-
-        if (canvasObject == null)
-        {
-            Debug.LogError("Canvas GameObject not found in the hierarchy.");
-        }
-
-        rooms = GameObject.Find("Room Menu");
-        if (rooms == null)
-        {
-            Debug.LogError("rooms aren't");
-        }
-        rooms.SetActive(false);
-
-        characterController = GetComponent<CharacterController>();
-        playerCamera = Camera.main;
-
-        if (playerCamera == null)
-        {
-            Debug.LogError("NO CAMERA");
-        }
-
-        playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y + cameraYOffset, transform.position.z);
-        playerCamera.transform.SetParent(transform);
-
-        ResetCursorState();
+    [Rpc(SendTo.Server)] 
+    // note that rpc methods must end with "Rpc". why? idk the compiler demands it tho
+    // also note that this code will be run on the server.
+    void CreateHandRpc(ulong ownerId)
+    {
+        var hand = NetworkManager.SpawnManager.InstantiateAndSpawn(handPrefab.GetComponent<NetworkObject>(), ownerClientId: ownerId);
+        hand.GetComponent<NetworkObject>().TrySetParent(transform);
+        hand.transform.localPosition += Vector3.forward;
     }
 
     void Update()
-{
-    if (!_avatar.IsMe)
+    {
+    if (!IsOwner)
         return;
 
-    if (playerCamera == null)
-    {
-        playerCamera = Camera.main;
-        if (playerCamera == null)
-        {
-            Debug.LogError("Camera not found!");
-            return;
-        }
-    }
     if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.Z))
     {
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
-        if (canvasObject != null)
-            canvasObject.SetActive(false);
+        if (_crosshair != null)
+            _crosshair.SetActive(false);
         else
             Debug.LogWarning("Canvas object not found.");
     }
@@ -100,8 +79,8 @@ public class PlayerMovement : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        if (canvasObject != null)
-            canvasObject.SetActive(true);
+        if (_crosshair != null)
+            _crosshair.SetActive(true);
         else
             Debug.LogWarning("Canvas object not found.");
     }
@@ -110,15 +89,6 @@ public class PlayerMovement : MonoBehaviour
     {
         HandleMovement();
         HandleRotation();
-    }
-
-    if (Input.GetKeyDown(KeyCode.BackQuote))
-    {
-        roomsMenuOpen = !roomsMenuOpen;
-        rooms.SetActive(roomsMenuOpen);
-        canvasObject.SetActive(!roomsMenuOpen);
-        Cursor.visible = roomsMenuOpen;
-        Cursor.lockState = roomsMenuOpen ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
     ApplyGravity();
@@ -131,41 +101,40 @@ public class PlayerMovement : MonoBehaviour
 
         float curSpeedX = canMove ? walkingSpeed * Input.GetAxis("Vertical") : 0;
         float curSpeedY = canMove ? walkingSpeed * Input.GetAxis("Horizontal") : 0;
-        float movementDirectionY = moveDirection.y;
-        moveDirection = (forward * curSpeedX) + (right * curSpeedY);
+        float movementDirectionY = _moveDirection.y;
+        _moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-        if (!characterController.isGrounded)
+        if (!_characterController.isGrounded)
         {
-            moveDirection.y = movementDirectionY;
+            _moveDirection.y = movementDirectionY;
         }
 
-        characterController.Move(moveDirection * Time.deltaTime);
+        _characterController.Move(_moveDirection * Time.deltaTime);
     }
 
     private void HandleRotation()
     {
-        if (canMove && playerCamera != null)
+        if (canMove && _playerCamera != null)
         {
-            rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
-            rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-            playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+            _rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
+            _rotationX = Mathf.Clamp(_rotationX, -lookXLimit, lookXLimit);
+            _playerCamera.transform.localRotation = Quaternion.Euler(_rotationX, 0, 0);
             transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
         }
     }
 
     private void ApplyGravity()
     {
-        if (!characterController.isGrounded)
-        {
-            moveDirection.y -= gravity * Time.deltaTime;
-            characterController.Move(moveDirection * Time.deltaTime);
-        }
+        if (_characterController.isGrounded) return;
+        
+        _moveDirection.y -= gravity * Time.deltaTime;
+        _characterController.Move(_moveDirection * Time.deltaTime);
     }
 
     private void ResetCursorState()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        rotationX = 0;
+        _rotationX = 0;
     }
 }

@@ -10,6 +10,6 @@ cool video!!!: https://www.youtube.com/watch?v=E9eHefMpVnM
 ### keybindings:
 z: mouse mode,\
 j: draw card,\
-comma (,): move center of hand left\
-period (.): move center of hand right\
+left arrow: move center of hand left\
+right arrow: move center of hand right
 
