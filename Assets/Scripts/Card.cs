@@ -7,8 +7,6 @@ using Unity.Netcode;
 //
 namespace Cards
 {
-
-
      public class Card : NetworkBehaviour
      {
          private NetworkVariable<Suit> _cardSuit = new();

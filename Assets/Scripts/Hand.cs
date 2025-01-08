@@ -11,7 +11,7 @@ using UnityEngine.InputSystem;
 public class Hand : NetworkBehaviour
 {
     private NetworkList<CardType> _hand = new();
-    private int _center;
+    private NetworkVariable<int> _center = new();
     public GameObject cardPrefab;
     private Deck _deck;
     private PlayerInput _input;
@@ -40,18 +40,23 @@ public class Hand : NetworkBehaviour
             DrawCardToHandRpc();
         }
 
-        if (Input.GetKeyDown(KeyCode.Comma))
+        if (_input.actions["RepositionLeft"].triggered)
         {
-            _center = Mathf.Max(0, _center - 1);
-            Reposition();
+            RepositionHandRpc(-1);
         }
 
-        if (Input.GetKeyDown(KeyCode.Period))
+        if (_input.actions["RepositionRight"].triggered)
         {
-            _center = Mathf.Min(_hand.Count - 1, _center + 1);
-            Reposition();
+            RepositionHandRpc(1);
         }
 
+    }
+
+    [Rpc(SendTo.Server)]
+    void RepositionHandRpc(int offset)
+    {
+        _center.Value = Mathf.Clamp(_center.Value + offset, 0, _hand.Count-1);
+        Reposition();
     }
 
     // TODO: WHEN REPLACING WITH GENERAL CLICK ON DECK, PASS THROUGH A RAYCAST AND HANDLE IN SERVER AAAAA POOP EMOJI DEVIL EMOJI (my window period broke)
@@ -73,7 +78,7 @@ public class Hand : NetworkBehaviour
         _hand.Add(card);
         if (_hand.Count % 2 == 0)
         {
-            _center++;
+            _center.Value++;
         }
         
         Reposition();
@@ -81,12 +86,12 @@ public class Hand : NetworkBehaviour
     
     void Reposition()
     {
-        transform.GetChild(_center).transform.localPosition = Vector3.zero;
-        transform.GetChild(_center).transform.localRotation = Quaternion.Euler(90, 270, 90);
+        transform.GetChild(_center.Value).transform.localPosition = Vector3.zero;
+        transform.GetChild(_center.Value).transform.localRotation = Quaternion.Euler(90, 270, 90);
         var prevRot = 90f;
-        for (var i = _center - 1; i >= 0; i--)
+        for (var i = _center.Value - 1; i >= 0; i--)
         {
-            var divideFactor = _hand.Count < _compressionThreshold ? 1 : _center - i;
+            var divideFactor = _hand.Count < _compressionThreshold ? 1 : _center.Value - i;
             var prevPos = transform.GetChild(i + 1).transform.localPosition;
             transform.GetChild(i).transform.localPosition = new Vector3(prevPos.x - 0.1f / divideFactor, prevPos.y - 0.02f / divideFactor,
                 prevPos.z + 0.005f / divideFactor);
@@ -95,9 +100,9 @@ public class Hand : NetworkBehaviour
         }
     
         prevRot = 90f;
-        for (var i = _center + 1; i < _hand.Count; i++)
+        for (var i = _center.Value + 1; i < _hand.Count; i++)
         {
-            var divideFactor = _hand.Count < _compressionThreshold ? 1 : i - _center;
+            var divideFactor = _hand.Count < _compressionThreshold ? 1 : i - _center.Value;
             var prevPos = transform.GetChild(i - 1).transform.localPosition;
             transform.GetChild(i).transform.localPosition = new Vector3(prevPos.x + 0.1f / divideFactor, prevPos.y - 0.02f / divideFactor,
                 prevPos.z - 0.005f / divideFactor);
