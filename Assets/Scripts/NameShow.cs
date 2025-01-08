@@ -1,19 +1,18 @@
-// using TMPro;
-// using UnityEngine;
-//
+using System;
+using TMPro;
+using UnityEngine;
 
-using Unity.Netcode;
-
-public class NameShow : NetworkBehaviour
+public class NameShow : MonoBehaviour
 {
-//     [SerializeField] private TextMeshPro nameText;
-//     private string originalText;
-//
-//     private void Start()
-//     {
-//         originalText = transform.parent.name;
-//         originalText = originalText.Substring(8);
-//         originalText = originalText.TrimEnd(')');
-//         nameText.text = originalText;
-     // }
+    private TextMeshPro nameText;
+
+    private void Awake()
+    {
+         nameText = GetComponent<TextMeshPro>();
+    }
+
+    private void Start()
+    {
+        nameText.text = "jet skibidi";
+     }
 }

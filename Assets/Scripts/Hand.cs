@@ -70,7 +70,8 @@ public class Hand : NetworkBehaviour
 
     public void AddCard(CardType card)
     {
-        var cardObject = NetworkManager.SpawnManager.InstantiateAndSpawn(cardPrefab.GetComponent<NetworkObject>(), OwnerClientId).gameObject;
+        var cardObject = NetworkManager.SpawnManager.InstantiateAndSpawn(cardPrefab.GetComponent<NetworkObject>(), OwnerClientId, position: _deck.transform.position + new Vector3(0, _deck.transform.lossyScale.y * 1.5f, 0)).gameObject;
+        Debug.Log(_deck.transform.lossyScale.y);
         cardObject.GetComponent<NetworkObject>().TrySetParent(transform);
         
         var cardComponent = cardObject.GetComponent<Card>();
