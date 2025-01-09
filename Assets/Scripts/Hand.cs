@@ -16,6 +16,7 @@ public class Hand : NetworkBehaviour
     private Deck _deck;
     private PlayerInput _input;
     private int _compressionThreshold = 7;
+    private float playerCameraYOffset = 0.4f;
 
 
     private void Awake()
@@ -35,10 +36,10 @@ public class Hand : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        if (_input.actions["Draw"].triggered)
-        {
-            DrawCardToHandRpc();
-        }
+        // if (_input.actions["Draw"].triggered)
+        // {
+        //     DrawCardToHandRpc();
+        // }
 
         if (_input.actions["RepositionLeft"].triggered)
         {
@@ -50,6 +51,11 @@ public class Hand : NetworkBehaviour
             RepositionHandRpc(1);
         }
 
+        if (_input.actions["LeftClick"].triggered)
+        {
+            ClickOnDeckRpc();
+        }
+
     }
 
     [Rpc(SendTo.Server)]
@@ -59,11 +65,20 @@ public class Hand : NetworkBehaviour
         Reposition();
     }
 
-    // TODO: WHEN REPLACING WITH GENERAL CLICK ON DECK, PASS THROUGH A RAYCAST AND HANDLE IN SERVER AAAAA POOP EMOJI DEVIL EMOJI (my window period broke)
     [Rpc(SendTo.Server)]
-    public void DrawCardToHandRpc()
+    void ClickOnDeckRpc()
     {
-        var card = _deck.DrawCard();
+        var cameraTransform = transform.parent.GetComponentInChildren<Camera>().transform;
+        if (Physics.Raycast(cameraTransform.position + new Vector3(0, playerCameraYOffset, 0), cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5, LayerMask.GetMask("Deck")))
+        {
+            DrawCardToHand(hit.transform.GetComponent<Deck>());
+        }
+        Debug.DrawRay(cameraTransform.position, cameraTransform.TransformDirection(Vector3.forward) * 5, Color.yellow, 15);
+    }
+
+    public void DrawCardToHand(Deck deck)
+    {
+        var card = deck.DrawCard();
         
         if (card.HasValue) AddCard(card.Value);
     }
@@ -88,8 +103,8 @@ public class Hand : NetworkBehaviour
     void Reposition()
     {
         transform.GetChild(_center.Value).transform.localPosition = Vector3.zero;
-        transform.GetChild(_center.Value).transform.localRotation = Quaternion.Euler(90, 270, 90);
-        var prevRot = 90f;
+        transform.GetChild(_center.Value).transform.localRotation = Quaternion.Euler(-90, -270, -90);
+        var prevRot = -90f;
         for (var i = _center.Value - 1; i >= 0; i--)
         {
             var divideFactor = _hand.Count < _compressionThreshold ? 1 : _center.Value - i;
@@ -100,7 +115,7 @@ public class Hand : NetworkBehaviour
             prevRot += 5.0f / Mathf.Sqrt(divideFactor);
         }
     
-        prevRot = 90f;
+        prevRot = -90f;
         for (var i = _center.Value + 1; i < _hand.Count; i++)
         {
             var divideFactor = _hand.Count < _compressionThreshold ? 1 : i - _center.Value;
