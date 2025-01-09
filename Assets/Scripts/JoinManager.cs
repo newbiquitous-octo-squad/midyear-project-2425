@@ -18,7 +18,10 @@ public class JoinGame : MonoBehaviour
         GUILayout.BeginArea(new Rect(Screen.width/2 - 200, Screen.height / 1.5f,400,400));
         var style = new GUIStyle();
         style.fontSize = 60;
-        style.alignment = TextAnchor.MiddleCenter;
+        style.font = Resources.Load<Font>("Fonts/casino.3d-marquee-regular");        style.alignment = TextAnchor.MiddleCenter;
+        style.normal.background = Texture2D.grayTexture;
+        style.normal.textColor = Color.white;
+        style.active.background = Texture2D.whiteTexture;
         
         
         if (!_networkManager.IsClient && !_networkManager.IsServer)
