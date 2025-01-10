@@ -57,7 +57,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         var hand = NetworkManager.SpawnManager.InstantiateAndSpawn(handPrefab.GetComponent<NetworkObject>(), ownerClientId: ownerId);
         hand.GetComponent<NetworkObject>().TrySetParent(transform);
-        hand.transform.localPosition += new Vector3(0, 0.055f, 0.75f);
+        hand.transform.localPosition += new Vector3(0, 0.02f, 0.75f);
     }
 
     void Update()
@@ -86,7 +86,11 @@ public class PlayerMovement : NetworkBehaviour
 
     if (Input.GetMouseButtonDown(0)) // Left click
     {
-       ClickOnCardRpc(OwnerClientId);
+        if (transform.GetComponentInChildren<Hand>().centerSelected.Value)
+        {
+           ClickOnTableRpc(); 
+        }
+        ClickOnCardRpc(OwnerClientId);
     }
 
     if (Cursor.lockState == CursorLockMode.Locked)
@@ -146,13 +150,31 @@ public class PlayerMovement : NetworkBehaviour
     void ClickOnCardRpc(ulong clicker)
     {
         var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
-        Debug.DrawRay(cameraTransform.position + new Vector3(0,cameraYOffset,0), cameraTransform.TransformDirection(Vector3.forward) * 5, Color.yellow, 15);
         if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0), cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5, LayerMask.GetMask("Card")))
         {
             if (hit.transform.parent.parent.GetComponent<NetworkObject>().OwnerClientId != clicker) return;
             
             var hand = hit.transform.parent.GetComponent<Hand>();
             hand.centerSelected.Value = !hand.centerSelected.Value;
+            hand.Reposition();
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    void ClickOnTableRpc()
+    {
+        var hand = transform.GetComponentInChildren<Hand>();
+        if (!hand.centerSelected.Value) return;
+        var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
+        if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0), cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5, LayerMask.GetMask("Table")))
+        {
+            var card = hand.gameObject.transform.GetChild(hand.center.Value);
+            card.GetComponent<NetworkObject>().TryRemoveParent();
+            card.position = hit.point;
+            card.rotation = Quaternion.identity;
+            hand.centerSelected.Value = false;
+            hand.hand.RemoveAt(hand.center.Value);
+            hand.center.Value = Mathf.Max(hand.center.Value - 1, 1);
             hand.Reposition();
         }
     }

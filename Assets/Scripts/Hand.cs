@@ -3,11 +3,12 @@ using Cards;
 using deckSpace;
 using Unity.Netcode;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class Hand : NetworkBehaviour
 {
-    private NetworkList<CardType> _hand = new();
-    private NetworkVariable<int> _center = new();
+    public NetworkList<CardType> hand = new();
+    public NetworkVariable<int> center = new();
     public NetworkVariable<bool> centerSelected = new();
     public GameObject cardPrefab;
     private Deck _deck;
@@ -59,7 +60,7 @@ public class Hand : NetworkBehaviour
     void RepositionHandRpc(int offset)
     {
         centerSelected.Value = false;
-        _center.Value = Mathf.Clamp(_center.Value + offset, 0, _hand.Count-1);
+        center.Value = Mathf.Clamp(center.Value + offset, 0, hand.Count-1);
         Reposition();
     }
 
@@ -88,10 +89,10 @@ public class Hand : NetworkBehaviour
         
         var cardComponent = cardObject.GetComponent<Card>();
         cardComponent.InitializeCard(card);
-        _hand.Add(card);
-        if (_hand.Count % 2 == 0)
+        hand.Add(card);
+        if (hand.Count % 2 == 0)
         {
-            _center.Value++;
+            center.Value++;
         }
         
         Reposition();
@@ -99,12 +100,12 @@ public class Hand : NetworkBehaviour
     
     public void Reposition()
     {
-        transform.GetChild(_center.Value).transform.localPosition = Vector3.zero;
-        transform.GetChild(_center.Value).transform.localRotation = Quaternion.Euler(-90, -270, -90);
+        transform.GetChild(center.Value).transform.localPosition = Vector3.zero;
+        transform.GetChild(center.Value).transform.localRotation = Quaternion.Euler(-90, -270, -90);
         var prevRot = -90f;
-        for (var i = _center.Value - 1; i >= 0; i--)
+        for (var i = center.Value - 1; i >= 0; i--)
         {
-            var divideFactor = _hand.Count < _compressionThreshold ? 1 : _center.Value - i;
+            var divideFactor = hand.Count < _compressionThreshold ? 1 : center.Value - i;
             var prevPos = transform.GetChild(i + 1).transform.localPosition;
             transform.GetChild(i).transform.localPosition = new Vector3(prevPos.x - 0.1f / divideFactor, prevPos.y - 0.02f / divideFactor,
                 prevPos.z + 0.005f / divideFactor);
@@ -113,9 +114,9 @@ public class Hand : NetworkBehaviour
         }
     
         prevRot = -90f;
-        for (var i = _center.Value + 1; i < _hand.Count; i++)
+        for (var i = center.Value + 1; i < hand.Count; i++)
         {
-            var divideFactor = _hand.Count < _compressionThreshold ? 1 : i - _center.Value;
+            var divideFactor = hand.Count < _compressionThreshold ? 1 : i - center.Value;
             var prevPos = transform.GetChild(i - 1).transform.localPosition;
             transform.GetChild(i).transform.localPosition = new Vector3(prevPos.x + 0.1f / divideFactor, prevPos.y - 0.02f / divideFactor,
                 prevPos.z - 0.005f / divideFactor);
@@ -123,7 +124,7 @@ public class Hand : NetworkBehaviour
             prevRot -= 5.0f / Mathf.Sqrt(divideFactor);
         }
 
-        transform.GetChild(_center.Value).transform.localPosition +=
+        transform.GetChild(center.Value).transform.localPosition +=
             centerSelected.Value ? new Vector3(0, 0.05f, 0) : Vector3.zero;
     }
 }
