@@ -56,6 +56,22 @@ public class Hand : NetworkBehaviour
             ClickOnDeckRpc();
         }
 
+        if (_input.actions["Shuffle"].triggered)
+        {
+            ShuffleDeckRpc();
+        }
+
+    }
+
+    [Rpc(SendTo.Server)]
+    void ShuffleDeckRpc()
+    {
+        var cameraTransform = transform.parent.GetComponentInChildren<Camera>().transform;
+        if (Physics.Raycast(cameraTransform.position + new Vector3(0, playerCameraYOffset, 0), cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5, LayerMask.GetMask("Deck")))
+        {
+            _deck.RequestShuffle();
+        }
+        Debug.DrawRay(cameraTransform.position, cameraTransform.TransformDirection(Vector3.forward) * 5, Color.yellow, 15);
     }
 
     [Rpc(SendTo.Server)]

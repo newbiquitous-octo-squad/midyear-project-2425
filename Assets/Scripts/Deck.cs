@@ -110,8 +110,9 @@ namespace deckSpace
              transform.localScale = _deckList.Count > 0 ? new Vector3(0.05f, _deckList.Count / 1040f, 0.05f) : Vector3.zero;
          }
 
-         private void Shuffle()
+         public void RequestShuffle()
          {
+             Debug.Log("Shuffle requested");
              Random r = new();
              for (var i = 0; i < _deckList.Count; i++)
              {
@@ -134,10 +135,11 @@ namespace deckSpace
 
          void Update()
          {
-             if (Input.GetKeyDown(KeyCode.C))
-             {
-                 Shuffle();
-             }
+             // if (Input.GetKeyDown(KeyCode.C))
+             // {
+             //     Debug.Log("shuffle called");
+             //     Shuffle();
+             // }
 
          }
      }
