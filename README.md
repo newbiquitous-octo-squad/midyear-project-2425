@@ -4,11 +4,11 @@ proposal: https://docs.google.com/document/d/1MNozHB8FO-iRLRKFfcrmONOLb8aF_3tbu1
 \
 \
 \
-\
+
 ### keybindings:
 z: mouse mode,\
 left arrow: move center of hand left\
-right arrow: move center of hand right
-left-click on deck to draw a card
+right arrow: move center of hand right\
+left-click on deck to draw a card\
 right-click on the deck to shuffle
 
