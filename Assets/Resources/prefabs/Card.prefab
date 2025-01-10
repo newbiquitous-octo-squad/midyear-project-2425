@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 5341594804156023451}
   - component: {fileID: 5073927172981192024}
   - component: {fileID: -4802994912379026274}
-  m_Layer: 0
+  - component: {fileID: -4065865213364742409}
+  m_Layer: 6
   m_Name: Card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.70710677, y: 0, z: 0, w: 0.70710677}
   m_LocalPosition: {x: 0.649, y: 0.1, z: 0.343}
-  m_LocalScale: {x: 0.35, y: 0.7, z: 0.5}
+  m_LocalScale: {x: 0.7, y: 1.4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6098721168118805806}
@@ -110,6 +111,27 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!65 &-4065865213364742409
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2534271353859667840}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.43, y: 0.005, z: 0.45}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &1286259664249019956
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -181,6 +203,10 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 0464afc39207ab540b94807b2273e3e5, type: 3}
       propertyPath: m_Name
       value: BackOfCard
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: 0464afc39207ab540b94807b2273e3e5, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -259,6 +285,10 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 0464afc39207ab540b94807b2273e3e5, type: 3}
       propertyPath: m_Name
       value: FrontOfCard
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: 0464afc39207ab540b94807b2273e3e5, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
