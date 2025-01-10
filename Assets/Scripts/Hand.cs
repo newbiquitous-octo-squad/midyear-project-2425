@@ -1,9 +1,5 @@
-using System;
-using System.Collections;
 using UnityEngine;
-using System.Collections.Generic;
 using Cards;
-using NUnit.Framework.Internal;
 using deckSpace;
 using Unity.Netcode;
 using UnityEngine.InputSystem;
@@ -12,10 +8,11 @@ public class Hand : NetworkBehaviour
 {
     private NetworkList<CardType> _hand = new();
     private NetworkVariable<int> _center = new();
+    public NetworkVariable<bool> centerSelected = new();
     public GameObject cardPrefab;
     private Deck _deck;
     private PlayerInput _input;
-    private int _compressionThreshold = 7;
+    private int _compressionThreshold = 12;
     private float playerCameraYOffset = 0.4f;
 
 
@@ -61,6 +58,7 @@ public class Hand : NetworkBehaviour
     [Rpc(SendTo.Server)]
     void RepositionHandRpc(int offset)
     {
+        centerSelected.Value = false;
         _center.Value = Mathf.Clamp(_center.Value + offset, 0, _hand.Count-1);
         Reposition();
     }
@@ -73,8 +71,8 @@ public class Hand : NetworkBehaviour
         {
             DrawCardToHand(hit.transform.GetComponent<Deck>());
         }
-        Debug.DrawRay(cameraTransform.position, cameraTransform.TransformDirection(Vector3.forward) * 5, Color.yellow, 15);
     }
+
 
     public void DrawCardToHand(Deck deck)
     {
@@ -86,7 +84,6 @@ public class Hand : NetworkBehaviour
     public void AddCard(CardType card)
     {
         var cardObject = NetworkManager.SpawnManager.InstantiateAndSpawn(cardPrefab.GetComponent<NetworkObject>(), OwnerClientId, position: _deck.transform.position + new Vector3(0, _deck.transform.lossyScale.y * 1.5f, 0)).gameObject;
-        Debug.Log(_deck.transform.lossyScale.y);
         cardObject.GetComponent<NetworkObject>().TrySetParent(transform);
         
         var cardComponent = cardObject.GetComponent<Card>();
@@ -100,7 +97,7 @@ public class Hand : NetworkBehaviour
         Reposition();
     }
     
-    void Reposition()
+    public void Reposition()
     {
         transform.GetChild(_center.Value).transform.localPosition = Vector3.zero;
         transform.GetChild(_center.Value).transform.localRotation = Quaternion.Euler(-90, -270, -90);
@@ -125,5 +122,8 @@ public class Hand : NetworkBehaviour
             transform.GetChild(i).transform.localRotation = Quaternion.Euler(prevRot - 5.0f / Mathf.Sqrt(divideFactor), 270, 90);
             prevRot -= 5.0f / Mathf.Sqrt(divideFactor);
         }
+
+        transform.GetChild(_center.Value).transform.localPosition +=
+            centerSelected.Value ? new Vector3(0, 0.05f, 0) : Vector3.zero;
     }
 }

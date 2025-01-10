@@ -1,11 +1,9 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using NUnit.Framework.Constraints;
+using Cards;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem.Controls;
-using UnityEngine.Rendering;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
+using Cursor = UnityEngine.Cursor;
 
 public class PlayerMovement : NetworkBehaviour
 {
@@ -20,6 +18,7 @@ public class PlayerMovement : NetworkBehaviour
     private CharacterController _characterController;
     private Vector3 _moveDirection = Vector3.zero;
     private float _rotationX = 0;
+    private Card _selectedCard;
 
     public bool canMove = true;
 
@@ -58,7 +57,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         var hand = NetworkManager.SpawnManager.InstantiateAndSpawn(handPrefab.GetComponent<NetworkObject>(), ownerClientId: ownerId);
         hand.GetComponent<NetworkObject>().TrySetParent(transform);
-        hand.transform.localPosition += new Vector3(0, 0.15f, 0.5f);
+        hand.transform.localPosition += new Vector3(0, 0.055f, 0.75f);
     }
 
     void Update()
@@ -83,6 +82,11 @@ public class PlayerMovement : NetworkBehaviour
             _crosshair.SetActive(true);
         else
             Debug.LogWarning("Canvas object not found.");
+    }
+
+    if (Input.GetMouseButtonDown(0)) // Left click
+    {
+       ClickOnCardRpc(OwnerClientId);
     }
 
     if (Cursor.lockState == CursorLockMode.Locked)
@@ -136,5 +140,20 @@ public class PlayerMovement : NetworkBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         _rotationX = 0;
+    }
+    
+    [Rpc(SendTo.Server)]
+    void ClickOnCardRpc(ulong clicker)
+    {
+        var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
+        Debug.DrawRay(cameraTransform.position + new Vector3(0,cameraYOffset,0), cameraTransform.TransformDirection(Vector3.forward) * 5, Color.yellow, 15);
+        if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0), cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5, LayerMask.GetMask("Card")))
+        {
+            if (hit.transform.parent.parent.GetComponent<NetworkObject>().OwnerClientId != clicker) return;
+            
+            var hand = hit.transform.parent.GetComponent<Hand>();
+            hand.centerSelected.Value = !hand.centerSelected.Value;
+            hand.Reposition();
+        }
     }
 }
