@@ -15,6 +15,7 @@ public class Hand : NetworkBehaviour
     private PlayerInput _input;
     private int _compressionThreshold = 12;
     private float playerCameraYOffset = 0.4f;
+    private NetworkVariable<bool> _raised = new();
 
 
     private void Awake()
@@ -44,14 +45,14 @@ public class Hand : NetworkBehaviour
             RepositionHandRpc(1);
         }
 
-        if (_input.actions["LeftClick"].triggered)
-        {
-            ClickOnDeckRpc();
-        }
-
         if (_input.actions["Shuffle"].triggered)
         {
             ShuffleDeckRpc();
+        }
+
+        if (_input.actions["RaiseHand"].triggered)
+        {
+           RaiseHandRpc(); 
         }
 
     }
@@ -75,14 +76,12 @@ public class Hand : NetworkBehaviour
         Reposition();
     }
 
+
     [Rpc(SendTo.Server)]
-    void ClickOnDeckRpc()
+    void RaiseHandRpc()
     {
-        var cameraTransform = transform.parent.GetComponentInChildren<Camera>().transform;
-        if (Physics.Raycast(cameraTransform.position + new Vector3(0, playerCameraYOffset, 0), cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5, LayerMask.GetMask("Deck")))
-        {
-            DrawCardToHand(hit.transform.GetComponent<Deck>());
-        }
+        _raised.Value = !_raised.Value;
+        transform.localPosition += new Vector3(0, _raised.Value ? 0.04f : -0.04f, 0);
     }
 
 

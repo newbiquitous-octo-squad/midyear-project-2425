@@ -1,5 +1,7 @@
 using Cards;
+using deckSpace;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using Cursor = UnityEngine.Cursor;
 
@@ -11,7 +13,6 @@ public class PlayerMovement : NetworkBehaviour
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
     public GameObject handPrefab;
-
 
     private CharacterController _characterController;
     private Vector3 _moveDirection = Vector3.zero;
@@ -55,7 +56,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         var hand = NetworkManager.SpawnManager.InstantiateAndSpawn(handPrefab.GetComponent<NetworkObject>(), ownerClientId: ownerId);
         hand.GetComponent<NetworkObject>().TrySetParent(transform);
-        hand.transform.localPosition += new Vector3(0, 0.02f, 0.75f);
+        hand.transform.localPosition += new Vector3(0, -0.01f, 0.75f);
     }
 
     void Update()
@@ -84,11 +85,7 @@ public class PlayerMovement : NetworkBehaviour
 
     if (Input.GetMouseButtonDown(0)) // Left click
     {
-        if (transform.GetComponentInChildren<Hand>().centerSelected.Value)
-        {
-           ClickOnTableRpc(); 
-        }
-        ClickOnCardRpc(OwnerClientId);
+        HandleClickRpc(OwnerClientId);
     }
 
     if (Cursor.lockState == CursorLockMode.Locked)
@@ -143,37 +140,61 @@ public class PlayerMovement : NetworkBehaviour
         Cursor.visible = false;
         _rotationX = 0;
     }
-    
-    [Rpc(SendTo.Server)]
-    void ClickOnCardRpc(ulong clicker)
-    {
-        var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
-        if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0), cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5, LayerMask.GetMask("Card")))
-        {
-            if (hit.transform.parent.parent.GetComponent<NetworkObject>().OwnerClientId != clicker) return;
-            
-            var hand = hit.transform.parent.GetComponent<Hand>();
-            hand.centerSelected.Value = !hand.centerSelected.Value;
-            hand.Reposition();
-        }
-    }
 
     [Rpc(SendTo.Server)]
-    void ClickOnTableRpc()
+    void HandleClickRpc(ulong clicker)
+    {
+        // cast the ray
+        var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
+        if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0),
+                cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5,
+                LayerMask.GetMask("Card", "Deck", "Table")))
+        {
+            switch (hit.transform.gameObject.layer)
+            {
+                case 3: // layer 3 is the deck layer
+                    ClickOnDeck(hit);
+                    break;
+                case 6: // layer 6 is the card layer
+                    ClickOnCard(clicker, hit);
+                    break;
+                case 7: // layer 7 is the table layer
+                    ClickOnTable(hit);
+                    break;
+            }
+        }
+    }
+    
+    
+    void ClickOnCard(ulong clicker, RaycastHit hit)
+    {
+        var hand = hit.transform.parent.GetComponent<Hand>();
+        
+        if (hand.GetComponent<NetworkObject>().OwnerClientId != clicker) return;
+        
+        hand.centerSelected.Value = !hand.centerSelected.Value;
+        hand.Reposition();
+    }
+
+    void ClickOnTable(RaycastHit hit)
     {
         var hand = transform.GetComponentInChildren<Hand>();
         if (!hand.centerSelected.Value) return;
-        var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
-        if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0), cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5, LayerMask.GetMask("Table")))
-        {
-            var card = hand.gameObject.transform.GetChild(hand.center.Value);
-            card.GetComponent<NetworkObject>().TryRemoveParent();
-            card.position = hit.point;
-            card.rotation = Quaternion.identity;
-            hand.centerSelected.Value = false;
-            hand.hand.RemoveAt(hand.center.Value);
-            hand.center.Value = Mathf.Max(hand.center.Value - 1, 0);
-            hand.Reposition();
-        }
+        
+        var card = hand.gameObject.transform.GetChild(hand.center.Value);
+        card.GetComponent<NetworkObject>().TryRemoveParent();
+        
+        card.position = hit.point;
+        card.rotation = Quaternion.identity;
+        
+        hand.centerSelected.Value = false;
+        hand.hand.RemoveAt(hand.center.Value);
+        hand.center.Value = Mathf.Max(hand.center.Value - 1, 0);
+        hand.Reposition();
+    }
+    
+    void ClickOnDeck(RaycastHit hit)
+    {
+        transform.GetComponentInChildren<Hand>().DrawCardToHand(hit.transform.GetComponent<Deck>());
     }
 }
