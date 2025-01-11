@@ -1,7 +1,6 @@
 using Cards;
 using deckSpace;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 using Cursor = UnityEngine.Cursor;
 
@@ -86,6 +85,16 @@ public class PlayerMovement : NetworkBehaviour
     if (Input.GetMouseButtonDown(0)) // Left click
     {
         HandleClickRpc(OwnerClientId);
+    }
+
+    if (Input.GetMouseButtonDown(1)) // Right click
+    {
+        HandleRightClickRpc();
+    }
+
+    if (Input.GetKeyDown(KeyCode.F))
+    {
+        FlipWithFRpc();
     }
 
     if (Cursor.lockState == CursorLockMode.Locked)
@@ -176,7 +185,7 @@ public class PlayerMovement : NetworkBehaviour
         hand.Reposition();
     }
 
-    void ClickOnTable(RaycastHit hit)
+    void ClickOnTable(RaycastHit hit, bool flip = false)
     {
         var hand = transform.GetComponentInChildren<Hand>();
         if (!hand.centerSelected.Value) return;
@@ -185,7 +194,7 @@ public class PlayerMovement : NetworkBehaviour
         card.GetComponent<NetworkObject>().TryRemoveParent();
         
         card.position = hit.point;
-        card.rotation = Quaternion.identity;
+        card.rotation = flip ? Quaternion.Euler(0, 0, 180) : Quaternion.identity;
         
         hand.centerSelected.Value = false;
         hand.hand.RemoveAt(hand.center.Value);
@@ -196,5 +205,52 @@ public class PlayerMovement : NetworkBehaviour
     void ClickOnDeck(RaycastHit hit)
     {
         transform.GetComponentInChildren<Hand>().DrawCardToHand(hit.transform.GetComponent<Deck>());
+    }
+
+
+    [Rpc(SendTo.Server)]
+    void HandleRightClickRpc()
+    {
+        var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
+        if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0),
+                cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5,
+                LayerMask.GetMask("Card", "Deck", "Table")))
+        {
+            switch (hit.transform.gameObject.layer)
+            {
+                case 3:
+                    // right-clicking on deck shuffles it
+                    hit.transform.GetComponent<Deck>().Shuffle();
+                    break;
+                case 6:
+                    // right-clicking on non-hand card flips it
+                    FlipCard(hit);
+                    break;
+                case 7:
+                    // right-clicking on the table places card face down
+                    ClickOnTable(hit, true);
+                    break;
+            }
+        }
+    }
+
+    void FlipCard(RaycastHit hit)
+    {
+        if (hit.transform.parent != null) return;
+
+        hit.transform.rotation = Quaternion.Euler(hit.transform.rotation.eulerAngles + new Vector3(0, 0, 180));
+    }
+
+    [Rpc(SendTo.Server)]
+    void FlipWithFRpc()
+    {
+        var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
+        if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0),
+                cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5,
+                LayerMask.GetMask("Card")))
+        {
+            FlipCard(hit);
+        }
+        
     }
 }
