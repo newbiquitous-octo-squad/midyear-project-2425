@@ -2,10 +2,12 @@ using Unity.Netcode;
 using UnityEngine;
 using Unity.Netcode.Transports.UTP;
 using Screen = UnityEngine.Device.Screen;
+using System;
 
 public class JoinGame : MonoBehaviour
 {
     private NetworkManager _networkManager;
+    private UnityTransport _transport;
     private ushort port;
     private string ipAddress;
     private string serverListenAddress;
@@ -14,6 +16,7 @@ public class JoinGame : MonoBehaviour
     private void Awake()
     {
         _networkManager = GetComponent<NetworkManager>();
+        _transport = GetComponent<UnityTransport>();
 
         // Default port is 7777
         port = 7777;
@@ -21,6 +24,25 @@ public class JoinGame : MonoBehaviour
         ipAddress = "127.0.0.1";
         // Allow connections from everyone
         serverListenAddress = "0.0.0.0";
+
+        _transport.OnTransportEvent += OnTransportEvent;
+
+        // Wait time for connecting to the server is the hearbeat interval * max connect attempts
+        // Default heartbeat interval is 1 second, default max connect attempts is 60
+        _transport.MaxConnectAttempts = 10;
+    }
+
+    private void OnTransportEvent(NetworkEvent networkEvent, ulong clientId, ArraySegment<byte> payload, float receiveTime)
+    {
+        if (networkEvent == NetworkEvent.Disconnect)
+        {
+            ConnectionFailPopup();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        _transport.OnTransportEvent -= OnTransportEvent;
     }
 
     private void OnGUI()
@@ -41,6 +63,7 @@ public class JoinGame : MonoBehaviour
             {
                 UpdateConnectionData(ipAddress, port, serverListenAddress);
                 _networkManager.StartClient();
+                Debug.Log("Connecting to server...");
             }
             // TODO: DELETE THIS IN PRODUCTION 🙏
             if (GUILayout.Button("Server"))
@@ -86,6 +109,11 @@ public class JoinGame : MonoBehaviour
 
     private void UpdateConnectionData(string ipAddress, ushort port, string serverListenAddress)
     {
-        ((UnityTransport)_networkManager.NetworkConfig.NetworkTransport).SetConnectionData(ipAddress, port, serverListenAddress);
+        ((UnityTransport) _networkManager.NetworkConfig.NetworkTransport).SetConnectionData(ipAddress, port, serverListenAddress);
+    }
+
+    private void ConnectionFailPopup()
+    {
+        // TODO: Add popup UI depending on connection failure or forced disconnect? might need another method
     }
 }
