@@ -1,4 +1,3 @@
-using System;
 using Unity.Netcode;
 using UnityEngine;
 using Unity.Netcode.Transports.UTP;
@@ -23,7 +22,7 @@ public class JoinGame : MonoBehaviour
     private void OnGUI()
     {
         GUI.color = Color.white;
-        GUILayout.BeginArea(new Rect(Screen.width / 2 - 200, Screen.height / 1.5f, 400, 400));
+        GUILayout.BeginArea(new Rect(Screen.width / 2f - 200, Screen.height / 1.5f, 400, 400));
         var style = new GUIStyle();
         style.fontSize = 60;
         style.font = Resources.Load<Font>("Fonts/casino.3d-marquee-regular"); style.alignment = TextAnchor.MiddleCenter;
@@ -51,15 +50,5 @@ public class JoinGame : MonoBehaviour
     private void UpdateConnectionData(string ipAddress, ushort port)
     {
         ((UnityTransport) _networkManager.NetworkConfig.NetworkTransport).SetConnectionData(ipAddress, port);
-    }
-
-    void Start()
-    {
-
-    }
-
-    void Update()
-    {
-
     }
 }

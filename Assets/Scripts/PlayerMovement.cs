@@ -1,8 +1,6 @@
 using Cards;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.LowLevel;
 using Cursor = UnityEngine.Cursor;
 
 public class PlayerMovement : NetworkBehaviour
@@ -174,7 +172,7 @@ public class PlayerMovement : NetworkBehaviour
             card.rotation = Quaternion.identity;
             hand.centerSelected.Value = false;
             hand.hand.RemoveAt(hand.center.Value);
-            hand.center.Value = Mathf.Max(hand.center.Value - 1, 1);
+            hand.center.Value = Mathf.Max(hand.center.Value - 1, 0);
             hand.Reposition();
         }
     }

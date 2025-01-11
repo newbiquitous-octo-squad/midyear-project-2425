@@ -34,11 +34,6 @@ public class Hand : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        // if (_input.actions["Draw"].triggered)
-        // {
-        //     DrawCardToHandRpc();
-        // }
-
         if (_input.actions["RepositionLeft"].triggered)
         {
             RepositionHandRpc(-1);

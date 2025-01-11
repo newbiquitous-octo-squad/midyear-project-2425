@@ -7,11 +7,11 @@ public class RunServer : MonoBehaviour
     private NetworkManager _networkManager;
     void Start()
     {
-        _networkManager = GetComponentInParent<NetworkManager>();
-        
-        if (Application.isEditor) return;
-
-        _networkManager.StartServer();
+        // _networkManager = GetComponentInParent<NetworkManager>();
+        //
+        // if (Application.isEditor) return;
+        //
+        // _networkManager.StartServer();
     }
     
 }
