@@ -177,12 +177,29 @@ public class PlayerMovement : NetworkBehaviour
     
     void ClickOnCard(ulong clicker, RaycastHit hit)
     {
-        var hand = hit.transform.parent.GetComponent<Hand>();
-        
-        if (hand.GetComponent<NetworkObject>().OwnerClientId != clicker) return;
-        
-        hand.centerSelected.Value = !hand.centerSelected.Value;
-        hand.Reposition();
+        if (hit.transform.parent != null)
+        {
+            var hand = hit.transform.parent.GetComponent<Hand>();
+
+            if (hand.GetComponent<NetworkObject>().OwnerClientId != clicker) return;
+
+            hand.centerSelected.Value = !hand.centerSelected.Value;
+            hand.Reposition();
+        }
+        else
+        {
+            var hand = transform.GetComponentInChildren<Hand>();
+            hit.transform.GetComponent<NetworkObject>().TrySetParent(hand.transform);
+            
+            var card = hit.transform.GetComponent<Card>();
+            hand.hand.Add(new CardType {Number = card.cardNumber.Value, Suit = card.cardSuit.Value});
+            if (hand.hand.Count % 2 == 0)
+            {
+                hand.center.Value++;
+            }
+            
+            hand.Reposition();
+        }
     }
 
     void ClickOnTable(RaycastHit hit, bool flip = false)

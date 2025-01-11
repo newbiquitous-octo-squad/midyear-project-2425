@@ -77,6 +77,7 @@ public class Hand : NetworkBehaviour
 
     public void AddCard(CardType card)
     {
+        // TODO: replace initial position with clicked deck's position for multiple decks, currently only finds one deck and sets initial position there
         var cardObject = NetworkManager.SpawnManager.InstantiateAndSpawn(cardPrefab.GetComponent<NetworkObject>(), OwnerClientId, position: _deck.transform.position + new Vector3(0, _deck.transform.lossyScale.y * 1.5f, 0)).gameObject;
         cardObject.GetComponent<NetworkObject>().TrySetParent(transform);
         

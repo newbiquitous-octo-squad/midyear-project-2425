@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using deckSpace;
 using UnityEngine;
 using Unity.Netcode;
+using UnityEngine.Serialization;
+
 //
 namespace Cards
 {
      public class Card : NetworkBehaviour
      {
-         private NetworkVariable<Suit> _cardSuit = new();
-         private NetworkVariable<int> _cardNumber = new();
+         public NetworkVariable<Suit> cardSuit = new();
+         public NetworkVariable<int> cardNumber = new();
          private bool _hasInitializedTexture = false;
 
          private void Awake()
@@ -25,8 +27,8 @@ namespace Cards
 
          public void InitializeCard(CardType card)
          {
-             _cardSuit.Value = card.Suit;
-             _cardNumber.Value = card.Number;
+             cardSuit.Value = card.Suit;
+             cardNumber.Value = card.Number;
          }
          
          public void UpdateTextures(Suit suit, int number)
@@ -77,9 +79,9 @@ namespace Cards
          private void Update()
          {
              // initialize texture on client if not done already
-             if (!_hasInitializedTexture && _cardNumber.Value != 0) 
+             if (!_hasInitializedTexture && cardNumber.Value != 0) 
              {
-                 UpdateTextures(_cardSuit.Value, _cardNumber.Value);
+                 UpdateTextures(cardSuit.Value, cardNumber.Value);
                  _hasInitializedTexture = true;
              }
          }
