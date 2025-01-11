@@ -56,7 +56,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         var hand = NetworkManager.SpawnManager.InstantiateAndSpawn(handPrefab.GetComponent<NetworkObject>(), ownerClientId: ownerId);
         hand.GetComponent<NetworkObject>().TrySetParent(transform);
-        hand.transform.localPosition += new Vector3(0, -0.01f, 0.75f);
+        hand.transform.localPosition += new Vector3(0, -0.1f, 0.75f);
     }
 
     void Update()
