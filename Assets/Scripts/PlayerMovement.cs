@@ -1,5 +1,6 @@
 using Cards;
 using deckSpace;
+using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
 using Cursor = UnityEngine.Cursor;
@@ -95,6 +96,16 @@ public class PlayerMovement : NetworkBehaviour
     if (Input.GetKeyDown(KeyCode.F))
     {
         FlipWithFRpc();
+    }
+
+    if (Input.GetKey(KeyCode.Q))
+    {
+        RotateCardRpc(-1);
+    }
+
+    if (Input.GetKey(KeyCode.E))
+    {
+        RotateCardRpc(1);
     }
 
     if (Cursor.lockState == CursorLockMode.Locked)
@@ -269,5 +280,19 @@ public class PlayerMovement : NetworkBehaviour
             FlipCard(hit);
         }
         
+    }
+
+    [Rpc(SendTo.Server)]
+    void RotateCardRpc(int direction)
+    {
+        var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
+        if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0),
+                cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5,
+                LayerMask.GetMask("Card")))
+        {
+            if (hit.transform.parent != null) return;
+            
+            hit.transform.rotation = Quaternion.Euler(hit.transform.rotation.eulerAngles + new Vector3(0, direction, 0));
+        }
     }
 }
