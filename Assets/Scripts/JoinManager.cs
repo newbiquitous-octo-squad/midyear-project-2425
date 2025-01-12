@@ -1,15 +1,15 @@
-using Unity.Netcode;
-using UnityEngine;
-using Unity.Netcode.Transports.UTP;
-using Screen = UnityEngine.Device.Screen;
 using System;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
+using UnityEngine;
+using Screen = UnityEngine.Device.Screen;
 
 public class JoinGame : MonoBehaviour
 {
     private NetworkManager _networkManager;
     private UnityTransport _transport;
-    private ushort port;
     private string ipAddress;
+    private ushort port;
     private string serverListenAddress;
     private bool showPanel;
 
@@ -30,14 +30,6 @@ public class JoinGame : MonoBehaviour
         // Wait time for connecting to the server is the hearbeat interval * max connect attempts
         // Default heartbeat interval is 1 second, default max connect attempts is 60
         _transport.MaxConnectAttempts = 10;
-    }
-
-    private void OnTransportEvent(NetworkEvent networkEvent, ulong clientId, ArraySegment<byte> payload, float receiveTime)
-    {
-        if (networkEvent == NetworkEvent.Disconnect)
-        {
-            ConnectionFailPopup();
-        }
     }
 
     private void OnDestroy()
@@ -65,25 +57,25 @@ public class JoinGame : MonoBehaviour
                 _networkManager.StartClient();
                 Debug.Log("Connecting to server...");
             }
+
             // TODO: DELETE THIS IN PRODUCTION 🙏
             if (GUILayout.Button("Server"))
             {
                 UpdateConnectionData(ipAddress, port, serverListenAddress);
                 _networkManager.StartServer();
             }
-            if (GUILayout.Button("Show Panel"))
-            {
-                showPanel = true;
-            }
+
+            if (GUILayout.Button("Show Panel")) showPanel = true;
         }
+
         GUILayout.EndArea();
 
         if (showPanel)
         {
-            float panelWidth = Screen.width * 0.7f;
-            float panelHeight = Screen.height * 0.8f;
-            float panelX = (Screen.width - panelWidth) / 2;
-            float panelY = (Screen.height - panelHeight) / 2;
+            var panelWidth = Screen.width * 0.7f;
+            var panelHeight = Screen.height * 0.8f;
+            var panelX = (Screen.width - panelWidth) / 2;
+            var panelY = (Screen.height - panelHeight) / 2;
 
             GUI.color = Color.gray;
             GUI.DrawTexture(new Rect(panelX, panelY, panelWidth, panelHeight), Texture2D.whiteTexture);
@@ -100,16 +92,20 @@ public class JoinGame : MonoBehaviour
             GUILayout.Label("Format & do the client (maybe host) handling within this panel", textStyle);
             GUILayout.EndArea();
 
-            if (GUI.Button(new Rect(panelX + 25, panelY + 25, 75, 75), "X", style))
-            {
-                showPanel = false;
-            }
+            if (GUI.Button(new Rect(panelX + 25, panelY + 25, 75, 75), "X", style)) showPanel = false;
         }
+    }
+
+    private void OnTransportEvent(NetworkEvent networkEvent, ulong clientId, ArraySegment<byte> payload,
+        float receiveTime)
+    {
+        if (networkEvent == NetworkEvent.Disconnect) ConnectionFailPopup();
     }
 
     private void UpdateConnectionData(string ipAddress, ushort port, string serverListenAddress)
     {
-        ((UnityTransport) _networkManager.NetworkConfig.NetworkTransport).SetConnectionData(ipAddress, port, serverListenAddress);
+        ((UnityTransport)_networkManager.NetworkConfig.NetworkTransport).SetConnectionData(ipAddress, port,
+            serverListenAddress);
     }
 
     private void ConnectionFailPopup()
