@@ -239,16 +239,24 @@ public class PlayerMovement : NetworkBehaviour
         card.position = hit.point;
         card.rotation = flip ? Quaternion.Euler(0, cardYRotation, 180) : Quaternion.Euler(0, cardYRotation, 0);
 
-        hand.centerSelected.Value = false;
-        hand.hand.RemoveAt(hand.center.Value);
-        hand.center.Value = Mathf.Max(hand.center.Value - 1, 0);
-        hand.Reposition();
+        hand.RemoveCenterCard();
     }
 
     private void ClickOnDeck(RaycastHit hit)
     {
-        Debug.Log(transform);
-        transform.GetComponentInChildren<Hand>().DrawCardToHand(hit.transform.childCount == 1 ? hit.transform.GetComponent<Deck>() : hit.transform.GetComponentInParent<Deck>());
+        var hand = transform.GetComponentInChildren<Hand>();
+        var deck = hit.transform.childCount == 1 ? hit.transform.GetComponent<Deck>() : hit.transform.GetComponentInParent<Deck>();
+        if (!hand.centerSelected.Value) 
+            hand.DrawCardToHand(deck);
+        else
+        {
+            var card = hand.transform.GetChild(hand.center.Value).GetComponent<Card>();
+            deck.AddCard(new CardType {Number = card.cardNumber.Value, Suit = card.cardSuit.Value});
+            
+            card.GetComponent<NetworkObject>().Despawn();
+            
+            hand.RemoveCenterCard();
+        }
     }
 
 
@@ -267,7 +275,7 @@ public class PlayerMovement : NetworkBehaviour
                     break;
                 case 6:
                     // right-clicking on non-hand card flips it
-                    FlipCard(hit);
+                    Flip(hit);
                     break;
                 case 7:
                     // right-clicking on the table places card face down
@@ -276,8 +284,13 @@ public class PlayerMovement : NetworkBehaviour
             }
     }
 
-    private void FlipCard(RaycastHit hit)
+    private void Flip(RaycastHit hit)
     {
+        if (hit.transform.parent.childCount == 1)
+        {
+            hit.transform.parent.rotation = Quaternion.Euler(hit.transform.parent.rotation.eulerAngles + new Vector3(0, 0, 180));
+            return;
+        }
         if (hit.transform.parent != null) return;
 
         hit.transform.rotation = Quaternion.Euler(hit.transform.rotation.eulerAngles + new Vector3(0, 0, 180));
@@ -289,8 +302,8 @@ public class PlayerMovement : NetworkBehaviour
         var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
         if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0),
                 cameraTransform.TransformDirection(Vector3.forward), out var hit, 5,
-                LayerMask.GetMask("Card")))
-            FlipCard(hit);
+                LayerMask.GetMask("Card", "Deck")))
+            Flip(hit);
     }
 
     [Rpc(SendTo.Server)]

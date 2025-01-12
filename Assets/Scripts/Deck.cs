@@ -76,6 +76,11 @@ namespace deckSpace
              _rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
          }
 
+         private Index LastIndex()
+         {
+             return transform.rotation.z == 0f ? ^1 : 0;
+         }
+
          public override void OnNetworkSpawn()
          {
              // server adds default cards to initial deck
@@ -92,7 +97,7 @@ namespace deckSpace
          {
              if (_deckList.Count > 0)
              {
-                 var toReturn = _deckList[^1];
+                 var toReturn = _deckList[LastIndex()];
                  RemoveCard();
 
                  return toReturn;
@@ -108,7 +113,7 @@ namespace deckSpace
          {
              if (_deckList.Count <= 0) return;
              
-             _deckList.Remove(_deckList[^1]);
+             _deckList.Remove(_deckList[LastIndex()]);
              UpdateTexture();
 
          }
@@ -129,10 +134,7 @@ namespace deckSpace
          {
              foreach (var card in _defaultDeck)
              {
-                 CardType toAdd = new();
-                 toAdd.Suit = card.suit;
-                 toAdd.Number = card.number;
-                 _deckList.Add(toAdd);
+                 _deckList.Add(new CardType {Number = card.number, Suit = card.suit});
              }
          }
 
@@ -160,7 +162,7 @@ namespace deckSpace
 
          public void AddCard(CardType card)
          {
-             _deckList.Add(card);
+             _deckList.Insert(LastIndex().Value == 0 ? 0 : _deckList.Count, card);
              UpdateTexture(false);
          }
 

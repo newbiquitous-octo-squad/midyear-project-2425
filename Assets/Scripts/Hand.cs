@@ -95,6 +95,14 @@ public class Hand : NetworkBehaviour
         
         Reposition();
     }
+
+    public void RemoveCenterCard()
+    {
+        centerSelected.Value = false;
+        hand.RemoveAt(center.Value);
+        center.Value = Mathf.Max(center.Value - 1, 0);
+        Reposition();
+    }
     
     public void Reposition()
     {

@@ -1,29 +1,15 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using deckSpace;
 using UnityEngine;
 using Unity.Netcode;
-using UnityEngine.Serialization;
 
-//
 namespace Cards
 {
      public class Card : NetworkBehaviour
      {
          public NetworkVariable<Suit> cardSuit = new();
          public NetworkVariable<int> cardNumber = new();
-         private bool _hasInitializedTexture = false;
-
-         private void Awake()
-         {
-             // Find the child "FrontOfCard" and set its material
-             var cardFace = transform.Find("FrontOfCard")?.gameObject;
-             if (cardFace == null)
-             {
-                 Debug.LogError("FrontOfCard child not found!");
-             }
-         }
+         private bool _hasInitializedTexture;
 
          public void InitializeCard(CardType card)
          {
