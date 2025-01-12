@@ -1,6 +1,6 @@
+using System.Linq;
 using Cards;
 using deckSpace;
-using Unity.Mathematics;
 using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -8,34 +8,80 @@ using Cursor = UnityEngine.Cursor;
 
 public class PlayerMovement : NetworkBehaviour
 {
-    [Header("Base setup")]
-    public float walkingSpeed = 3.5f;
+    [Header("Base setup")] public float walkingSpeed = 3.5f;
+
     public float gravity = 20.0f;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
     public GameObject handPrefab;
     public GameObject deckPrefab;
 
-    private CharacterController _characterController;
-    private Vector3 _moveDirection = Vector3.zero;
-    private float _rotationX = 0;
-    private Card _selectedCard;
-
     public bool canMove = true;
 
-    [SerializeField]
-    private float cameraYOffset = 0.4f;
-    private Camera _playerCamera;
+    [SerializeField] private float cameraYOffset = 0.4f;
+
+    private CharacterController _characterController;
 
     private GameObject _crosshair;
     private GameObject _hand;
+    private Vector3 _moveDirection = Vector3.zero;
+    private Camera _playerCamera;
+    private float _rotationX;
+    private Card _selectedCard;
 
-    void Awake()
+    private void Awake()
     {
         _characterController = GetComponent<CharacterController>();
         _playerCamera = GetComponentInChildren<Camera>();
         _playerCamera.enabled = false;
         _crosshair = GameObject.Find("Crosshair");
+    }
+
+    private void Update()
+    {
+        if (!IsOwner)
+            return;
+
+        if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.Z))
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            if (_crosshair != null)
+                _crosshair.SetActive(false);
+            else
+                Debug.LogWarning("Canvas object not found.");
+        }
+        else if (Cursor.lockState == CursorLockMode.None && Input.GetKeyDown(KeyCode.Z))
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            if (_crosshair != null)
+                _crosshair.SetActive(true);
+            else
+                Debug.LogWarning("Canvas object not found.");
+        }
+
+        bool isShiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+
+        if (Input.GetMouseButtonDown(0)) // Left click
+            HandleClickRpc(OwnerClientId, isShiftPressed);
+
+        if (Input.GetMouseButtonDown(1)) // Right click
+            HandleRightClickRpc(isShiftPressed);
+
+        if (Input.GetKeyDown(KeyCode.F)) FlipWithFRpc();
+
+        if (Input.GetKey(KeyCode.Q)) RotateCardRpc(-0.5f);
+
+        if (Input.GetKey(KeyCode.E)) RotateCardRpc(0.5f);
+
+        if (Cursor.lockState == CursorLockMode.Locked)
+        {
+            HandleMovement();
+            HandleRotation();
+        }
+
+        ApplyGravity();
     }
 
     public override void OnNetworkSpawn()
@@ -44,95 +90,36 @@ public class PlayerMovement : NetworkBehaviour
         if (IsOwner)
         {
             Camera.main!.enabled = false;
-            _playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y + cameraYOffset, transform.position.z);
+            _playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y + cameraYOffset,
+                transform.position.z);
             CreateHandRpc(OwnerClientId);
             ResetCursorState();
         }
+
         base.OnNetworkSpawn();
     }
 
-    [Rpc(SendTo.Server)] 
+    [Rpc(SendTo.Server)]
     // note that rpc methods must end with "Rpc". why? idk the compiler demands it tho
     // also note that this code will be run on the server.
-    void CreateHandRpc(ulong ownerId)
+    private void CreateHandRpc(ulong ownerId)
     {
-        var hand = NetworkManager.SpawnManager.InstantiateAndSpawn(handPrefab.GetComponent<NetworkObject>(), ownerClientId: ownerId);
+        var hand = NetworkManager.SpawnManager.InstantiateAndSpawn(handPrefab.GetComponent<NetworkObject>(), ownerId);
         hand.GetComponent<NetworkObject>().TrySetParent(transform);
         hand.transform.localPosition += new Vector3(0, -0.15f, 0.7f);
     }
 
-    void Update()
-    {
-    if (!IsOwner)
-        return;
-
-    if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.Z))
-    {
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
-        if (_crosshair != null)
-            _crosshair.SetActive(false);
-        else
-            Debug.LogWarning("Canvas object not found.");
-    }
-    else if (Cursor.lockState == CursorLockMode.None && Input.GetKeyDown(KeyCode.Z))
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        if (_crosshair != null)
-            _crosshair.SetActive(true);
-        else
-            Debug.LogWarning("Canvas object not found.");
-    }
-
-    if (Input.GetMouseButtonDown(0)) // Left click
-    {
-        HandleClickRpc(OwnerClientId);
-    }
-
-    if (Input.GetMouseButtonDown(1)) // Right click
-    {
-        HandleRightClickRpc();
-    }
-
-    if (Input.GetKeyDown(KeyCode.F))
-    {
-        FlipWithFRpc();
-    }
-
-    if (Input.GetKey(KeyCode.Q))
-    {
-        RotateCardRpc(-0.5f);
-    }
-
-    if (Input.GetKey(KeyCode.E))
-    {
-        RotateCardRpc(0.5f);
-    }
-
-    if (Cursor.lockState == CursorLockMode.Locked)
-    {
-        HandleMovement();
-        HandleRotation();
-    }
-
-    ApplyGravity();
-}
-
     private void HandleMovement()
     {
-        Vector3 forward = transform.TransformDirection(Vector3.forward);
-        Vector3 right = transform.TransformDirection(Vector3.right);
+        var forward = transform.TransformDirection(Vector3.forward);
+        var right = transform.TransformDirection(Vector3.right);
 
-        float curSpeedX = canMove ? walkingSpeed * Input.GetAxis("Vertical") : 0;
-        float curSpeedY = canMove ? walkingSpeed * Input.GetAxis("Horizontal") : 0;
-        float movementDirectionY = _moveDirection.y;
-        _moveDirection = (forward * curSpeedX) + (right * curSpeedY);
+        var curSpeedX = canMove ? walkingSpeed * Input.GetAxis("Vertical") : 0;
+        var curSpeedY = canMove ? walkingSpeed * Input.GetAxis("Horizontal") : 0;
+        var movementDirectionY = _moveDirection.y;
+        _moveDirection = forward * curSpeedX + right * curSpeedY;
 
-        if (!_characterController.isGrounded)
-        {
-            _moveDirection.y = movementDirectionY;
-        }
+        if (!_characterController.isGrounded) _moveDirection.y = movementDirectionY;
 
         _characterController.Move(_moveDirection * Time.deltaTime);
     }
@@ -151,7 +138,7 @@ public class PlayerMovement : NetworkBehaviour
     private void ApplyGravity()
     {
         if (_characterController.isGrounded) return;
-        
+
         _moveDirection.y -= gravity * Time.deltaTime;
         _characterController.Move(_moveDirection * Time.deltaTime);
     }
@@ -164,14 +151,12 @@ public class PlayerMovement : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    void HandleClickRpc(ulong clicker)
+    private void HandleClickRpc(ulong clicker, bool isShiftPressed)
     {
-        // cast the ray
         var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
         if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0),
-                cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5,
+                cameraTransform.TransformDirection(Vector3.forward), out var hit, 5,
                 LayerMask.GetMask("Card", "Deck", "Table")))
-        {
             switch (hit.transform.gameObject.layer)
             {
                 case 3: // layer 3 is the deck layer
@@ -181,14 +166,13 @@ public class PlayerMovement : NetworkBehaviour
                     ClickOnCard(clicker, hit);
                     break;
                 case 7: // layer 7 is the table layer
-                    ClickOnTable(hit);
+                    ClickOnTable(hit, isShiftPressed);
                     break;
             }
-        }
     }
-    
-    
-    void ClickOnCard(ulong clicker, RaycastHit hit)
+
+
+    private void ClickOnCard(ulong clicker, RaycastHit hit)
     {
         if (hit.transform.parent != null)
         {
@@ -203,14 +187,11 @@ public class PlayerMovement : NetworkBehaviour
         {
             var hand = transform.GetComponentInChildren<Hand>();
             hit.transform.GetComponent<NetworkObject>().TrySetParent(hand.transform);
-            
+
             var card = hit.transform.GetComponent<Card>();
-            hand.hand.Add(new CardType {Number = card.cardNumber.Value, Suit = card.cardSuit.Value});
-            if (hand.hand.Count % 2 == 0)
-            {
-                hand.center.Value++;
-            }
-            
+            hand.hand.Add(new CardType { Number = card.cardNumber.Value, Suit = card.cardSuit.Value });
+            if (hand.hand.Count % 2 == 0) hand.center.Value++;
+
             hand.Reposition();
         }
         else
@@ -232,38 +213,48 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    void ClickOnTable(RaycastHit hit, bool flip = false)
+    private void ClickOnTable(RaycastHit hit, bool isShiftPressed, bool flip = false)
     {
-        Debug.Log(transform.localEulerAngles.y);
         var hand = transform.GetComponentInChildren<Hand>();
         if (!hand.centerSelected.Value) return;
-        
-        var card = hand.gameObject.transform.GetChild(hand.center.Value);   
+
+        var card = hand.gameObject.transform.GetChild(hand.center.Value);
         card.GetComponent<NetworkObject>().TryRemoveParent();
-        
+
+        float cardYRotation;
+        if (isShiftPressed)
+        {
+            cardYRotation = transform.localEulerAngles.y;
+        }
+        else
+        {
+            var playerYRotation = transform.localEulerAngles.y;
+            float[] angles = { 0, 90, 180, 270 };
+            cardYRotation = angles.OrderBy(angle => Mathf.Abs(Mathf.DeltaAngle(playerYRotation, angle))).First();
+        }
+
         card.position = hit.point;
-        card.rotation = flip ? Quaternion.Euler(0, transform.localEulerAngles.y, 180) : Quaternion.Euler(0, transform.localEulerAngles.y, 0);
-        
+        card.rotation = flip ? Quaternion.Euler(0, cardYRotation, 180) : Quaternion.Euler(0, cardYRotation, 0);
+
         hand.centerSelected.Value = false;
         hand.hand.RemoveAt(hand.center.Value);
         hand.center.Value = Mathf.Max(hand.center.Value - 1, 0);
         hand.Reposition();
     }
-    
-    void ClickOnDeck(RaycastHit hit)
+
+    private void ClickOnDeck(RaycastHit hit)
     {
         transform.GetComponentInChildren<Hand>().DrawCardToHand(hit.transform.childCount == 1 ? hit.transform.GetComponent<Deck>() : hit.transform.GetComponentInParent<Deck>());
     }
 
 
     [Rpc(SendTo.Server)]
-    void HandleRightClickRpc()
+    private void HandleRightClickRpc(bool isShiftPressed)
     {
         var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
         if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0),
-                cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5,
+                cameraTransform.TransformDirection(Vector3.forward), out var hit, 5,
                 LayerMask.GetMask("Card", "Deck", "Table")))
-        {
             switch (hit.transform.gameObject.layer)
             {
                 case 3:
@@ -276,13 +267,12 @@ public class PlayerMovement : NetworkBehaviour
                     break;
                 case 7:
                     // right-clicking on the table places card face down
-                    ClickOnTable(hit, true);
+                    ClickOnTable(hit, isShiftPressed, true);
                     break;
             }
-        }
     }
 
-    void FlipCard(RaycastHit hit)
+    private void FlipCard(RaycastHit hit)
     {
         if (hit.transform.parent != null) return;
 
@@ -290,29 +280,27 @@ public class PlayerMovement : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    void FlipWithFRpc()
+    private void FlipWithFRpc()
     {
         var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
         if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0),
-                cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5,
+                cameraTransform.TransformDirection(Vector3.forward), out var hit, 5,
                 LayerMask.GetMask("Card")))
-        {
             FlipCard(hit);
-        }
-        
     }
 
     [Rpc(SendTo.Server)]
-    void RotateCardRpc(float direction)
+    private void RotateCardRpc(float direction)
     {
         var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
         if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0),
-                cameraTransform.TransformDirection(Vector3.forward), out RaycastHit hit, 5,
+                cameraTransform.TransformDirection(Vector3.forward), out var hit, 5,
                 LayerMask.GetMask("Card")))
         {
             if (hit.transform.parent != null) return;
-            
-            hit.transform.rotation = Quaternion.Euler(hit.transform.rotation.eulerAngles + new Vector3(0, direction, 0));
+
+            hit.transform.rotation =
+                Quaternion.Euler(hit.transform.rotation.eulerAngles + new Vector3(0, direction, 0));
         }
     }
 }
