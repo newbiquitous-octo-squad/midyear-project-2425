@@ -30,10 +30,10 @@ namespace Cards
              cardSuit.Value = card.Suit;
              cardNumber.Value = card.Number;
          }
-         
-         public void UpdateTextures(Suit suit, int number)
+
+         public static string GetSuitName(Suit suit)
          {
-             string suitName = suit switch
+             return suit switch
              {
                  Suit.HEARTS => "Heart",
                  Suit.CLUBS => "Club",
@@ -41,39 +41,12 @@ namespace Cards
                  Suit.DIAMONDS => "Diamond",
                  _ => throw new Exception("hey the how did the happen??")
              };
-
-             // Construct the material path based on the suit and number
-             var materialPath = $"Materials/{suitName}{number}";
-
-             // Load the material from the Resources folder
-             var material = Resources.Load<Material>(materialPath);
-             if (material != null)
-             {
-                 // Find the child "FrontOfCard" and set its material
-                 var cardFace = transform.Find("FrontOfCard")?.gameObject;
-                 if (cardFace != null)
-                 {
-                     var meshRenderer = cardFace.GetComponent<MeshRenderer>();
-                     if (meshRenderer != null)
-                     {
-                         meshRenderer.material = material;
-                         Debug.Log($"Material {materialPath} successfully loaded and applied.");
-                     }
-                     else
-                     {
-                         Debug.LogError("MeshRenderer component not found on FrontOfCard!");
-                     }
-                 }
-                 else
-                 {
-                     Debug.LogError("FrontOfCard child not found!");
-                 }
-             }
-             else
-             {
-                 Debug.LogWarning($"Material {materialPath} not found in Resources folder.");
-             }
-
+         }
+         
+         public void UpdateTextures(Suit suit, int number)
+         {
+             transform.GetChild(1).GetComponent<MeshRenderer>().material =
+                 Resources.Load<Material>($"Materials/{GetSuitName(suit)}{number}");
          }
 
          private void Update()

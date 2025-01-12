@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.ComTypes;
 using UnityEngine;
 using Cards;
 using Unity.Netcode;
@@ -80,6 +82,7 @@ namespace deckSpace
              if (IsServer)
              {
                  ResetDeck();
+                 UpdateBottomCardTexture();
              }
              
              base.OnNetworkSpawn();
@@ -106,6 +109,7 @@ namespace deckSpace
              if (_deckList.Count <= 0) return;
              
              _deckList.Remove(_deckList[^1]);
+             UpdateBottomCardTexture();
 
              transform.localScale = _deckList.Count > 0 ? new Vector3(0.05f, _deckList.Count / 1040f, 0.05f) : Vector3.zero;
          }
@@ -118,6 +122,7 @@ namespace deckSpace
                  var n = r.Next(i, _deckList.Count);
                  (_deckList[i], _deckList[n]) = (_deckList[n], _deckList[i]);
              }
+             UpdateBottomCardTexture();
 
          }
 
@@ -132,14 +137,27 @@ namespace deckSpace
              }
          }
 
+         void UpdateBottomCardTexture()
+         {
+             if (_deckList.Count == 0)
+             {
+                 GetComponent<NetworkObject>().Despawn();
+                 return;
+             }
+
+             if (_deckList.Count == 1)
+             {
+                 var card = NetworkManager.SpawnManager.InstantiateAndSpawn(cardPrefab.GetComponent<NetworkObject>(), position: transform.position, rotation: transform.rotation);
+                 card.GetComponent<Card>().InitializeCard(_deckList[0]);
+                 GetComponent<NetworkObject>().Despawn();
+             }
+             var bottomCard = _deckList[0];
+             transform.GetChild(0).GetComponent<MeshRenderer>().material =
+                     Resources.Load<Material>($"Materials/{Card.GetSuitName(bottomCard.Suit)}{bottomCard.Number}");
+         }
+
          void Update()
          {
-             // if (Input.GetKeyDown(KeyCode.C))
-             // {
-             //     Debug.Log("shuffle called");
-             //     Shuffle();
-             // }
-
          }
      }
 
