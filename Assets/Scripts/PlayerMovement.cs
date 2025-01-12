@@ -2,7 +2,6 @@ using System.Linq;
 using Cards;
 using deckSpace;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 using Cursor = UnityEngine.Cursor;
 
@@ -210,6 +209,10 @@ public class PlayerMovement : NetworkBehaviour
             deck.AddCard(new CardType {Suit = centerCard.GetComponent<Card>().cardSuit.Value, Number = centerCard.GetComponent<Card>().cardNumber.Value});
             centerCard.GetComponent<NetworkObject>().Despawn();
             card.GetComponent<NetworkObject>().Despawn();
+
+            hand.hand.RemoveAt(hand.center.Value);
+            hand.centerSelected.Value = false;
+            hand.Reposition();
         }
     }
 
@@ -244,6 +247,7 @@ public class PlayerMovement : NetworkBehaviour
 
     private void ClickOnDeck(RaycastHit hit)
     {
+        Debug.Log(transform);
         transform.GetComponentInChildren<Hand>().DrawCardToHand(hit.transform.childCount == 1 ? hit.transform.GetComponent<Deck>() : hit.transform.GetComponentInParent<Deck>());
     }
 

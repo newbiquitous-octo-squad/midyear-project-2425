@@ -77,8 +77,12 @@ public class Hand : NetworkBehaviour
 
     public void AddCard(CardType card)
     {
-        // TODO: replace initial position with clicked deck's position for multiple decks, currently only finds one deck and sets initial position there
-        var cardObject = NetworkManager.SpawnManager.InstantiateAndSpawn(cardPrefab.GetComponent<NetworkObject>(), OwnerClientId, position: _deck.transform.position + new Vector3(0, _deck.transform.lossyScale.y * 1.5f, 0)).gameObject;
+        // check which position to spawn at (for nice animation)
+        var playerCamera = transform.parent.GetComponentInChildren<Camera>().transform;
+        var pos = Physics.Raycast(playerCamera.position + new Vector3(0, 0.4f, 0), playerCamera.TransformDirection(Vector3.forward), out var hit,
+            6, LayerMask.GetMask("Deck")) ? hit.transform.position + new Vector3(0, hit.transform.localScale.y, 0) : Vector3.zero; // if raycast fails for some reason, just spawn at 0,0,0
+        
+        var cardObject = NetworkManager.SpawnManager.InstantiateAndSpawn(cardPrefab.GetComponent<NetworkObject>(), OwnerClientId, position: pos).gameObject;
         cardObject.GetComponent<NetworkObject>().TrySetParent(transform);
         
         var cardComponent = cardObject.GetComponent<Card>();

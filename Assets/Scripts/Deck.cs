@@ -147,7 +147,7 @@ namespace deckSpace
 
              if (_deckList.Count == 1 && checkIfRemove)
              {
-                 var card = NetworkManager.SpawnManager.InstantiateAndSpawn(cardPrefab.GetComponent<NetworkObject>(), position: transform.position, rotation: transform.rotation);
+                 var card = NetworkManager.SpawnManager.InstantiateAndSpawn(cardPrefab.GetComponent<NetworkObject>(), position: transform.position, rotation: Quaternion.Euler(transform.rotation.eulerAngles - new Vector3(0, 0, 180)));
                  card.GetComponent<Card>().InitializeCard(_deckList[0]);
                  GetComponent<NetworkObject>().Despawn();
                  return;
@@ -177,9 +177,7 @@ namespace deckSpace
              if (_textureFrames < 10)
              {
                  _textureFrames++;
-                 var bottomCard = _deckList[0];
-                 transform.GetChild(0).GetComponent<MeshRenderer>().material =
-                         Resources.Load<Material>($"Materials/{Card.GetSuitName(bottomCard.Suit)}{bottomCard.Number}");
+                 UpdateTexture(false);
              }
          }
      }
