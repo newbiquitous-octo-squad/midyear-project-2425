@@ -2,6 +2,7 @@ using Cards;
 using deckSpace;
 using Unity.Mathematics;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using Cursor = UnityEngine.Cursor;
 
@@ -13,6 +14,7 @@ public class PlayerMovement : NetworkBehaviour
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
     public GameObject handPrefab;
+    public GameObject deckPrefab;
 
     private CharacterController _characterController;
     private Vector3 _moveDirection = Vector3.zero;
@@ -197,7 +199,7 @@ public class PlayerMovement : NetworkBehaviour
             hand.centerSelected.Value = !hand.centerSelected.Value;
             hand.Reposition();
         }
-        else
+        else if (!transform.GetComponentInChildren<Hand>().centerSelected.Value)
         {
             var hand = transform.GetComponentInChildren<Hand>();
             hit.transform.GetComponent<NetworkObject>().TrySetParent(hand.transform);
@@ -210,6 +212,23 @@ public class PlayerMovement : NetworkBehaviour
             }
             
             hand.Reposition();
+        }
+        else
+        {
+            var hand = transform.GetComponentInChildren<Hand>();
+            var deckObject = NetworkManager.SpawnManager.InstantiateAndSpawn(deckPrefab.GetComponent<NetworkObject>(),
+                position: hit.transform.position, rotation: Quaternion.Euler(hit.transform.rotation.eulerAngles + new Vector3(0, 0, 180)));
+            var deck = deckObject.gameObject.GetComponent<Deck>();
+            var card = hit.transform.GetComponent<Card>();
+            var centerCard = hand.transform.GetChild(hand.center.Value);
+            
+            deck.Empty();
+            deck.AddCard(new CardType {Suit = card.cardSuit.Value, Number = card.cardNumber.Value});
+            
+            centerCard.transform.position = hit.transform.position;
+            deck.AddCard(new CardType {Suit = centerCard.GetComponent<Card>().cardSuit.Value, Number = centerCard.GetComponent<Card>().cardNumber.Value});
+            centerCard.GetComponent<NetworkObject>().Despawn();
+            card.GetComponent<NetworkObject>().Despawn();
         }
     }
 
@@ -233,7 +252,7 @@ public class PlayerMovement : NetworkBehaviour
     
     void ClickOnDeck(RaycastHit hit)
     {
-        transform.GetComponentInChildren<Hand>().DrawCardToHand(hit.transform.GetComponent<Deck>());
+        transform.GetComponentInChildren<Hand>().DrawCardToHand(hit.transform.childCount == 1 ? hit.transform.GetComponent<Deck>() : hit.transform.GetComponentInParent<Deck>());
     }
 
 

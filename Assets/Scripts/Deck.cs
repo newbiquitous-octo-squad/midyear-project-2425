@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices.ComTypes;
 using UnityEngine;
 using Cards;
 using Unity.Netcode;
@@ -17,7 +15,7 @@ namespace deckSpace
         CLUBS
     }
 
-    public struct CardType : INetworkSerializable, System.IEquatable<CardType>
+    public struct CardType : INetworkSerializable, IEquatable<CardType>
     {
         public Suit Suit;
         public int Number;
@@ -48,6 +46,8 @@ namespace deckSpace
      {
          public GameObject cardPrefab;
 
+         private int _textureFrames;
+         
          private Rigidbody _rigidbody;
 
          private (Suit suit, int number)[] _defaultDeck = {
@@ -82,7 +82,7 @@ namespace deckSpace
              if (IsServer)
              {
                  ResetDeck();
-                 UpdateBottomCardTexture();
+                 UpdateTexture();
              }
              
              base.OnNetworkSpawn();
@@ -109,9 +109,8 @@ namespace deckSpace
              if (_deckList.Count <= 0) return;
              
              _deckList.Remove(_deckList[^1]);
-             UpdateBottomCardTexture();
+             UpdateTexture();
 
-             transform.localScale = _deckList.Count > 0 ? new Vector3(0.05f, _deckList.Count / 1040f, 0.05f) : Vector3.zero;
          }
 
          public void Shuffle()
@@ -122,7 +121,7 @@ namespace deckSpace
                  var n = r.Next(i, _deckList.Count);
                  (_deckList[i], _deckList[n]) = (_deckList[n], _deckList[i]);
              }
-             UpdateBottomCardTexture();
+             UpdateTexture();
 
          }
 
@@ -137,27 +136,51 @@ namespace deckSpace
              }
          }
 
-         void UpdateBottomCardTexture()
+         void UpdateTexture(bool checkIfRemove = true)
          {
-             if (_deckList.Count == 0)
+             transform.localScale = _deckList.Count > 0 ? new Vector3(0.05f, _deckList.Count / 1040f, 0.05f) : Vector3.zero;
+             if (_deckList.Count == 0 && checkIfRemove)
              {
                  GetComponent<NetworkObject>().Despawn();
                  return;
              }
 
-             if (_deckList.Count == 1)
+             if (_deckList.Count == 1 && checkIfRemove)
              {
                  var card = NetworkManager.SpawnManager.InstantiateAndSpawn(cardPrefab.GetComponent<NetworkObject>(), position: transform.position, rotation: transform.rotation);
                  card.GetComponent<Card>().InitializeCard(_deckList[0]);
                  GetComponent<NetworkObject>().Despawn();
+                 return;
              }
+
              var bottomCard = _deckList[0];
              transform.GetChild(0).GetComponent<MeshRenderer>().material =
                      Resources.Load<Material>($"Materials/{Card.GetSuitName(bottomCard.Suit)}{bottomCard.Number}");
          }
 
+         public void AddCard(CardType card)
+         {
+             _deckList.Add(card);
+             UpdateTexture(false);
+         }
+
+         public void Empty()
+         {
+             while (_deckList.Count > 0)
+             {
+                 _deckList.RemoveAt(0);
+             }
+         }
+
          void Update()
          {
+             if (_textureFrames < 10)
+             {
+                 _textureFrames++;
+                 var bottomCard = _deckList[0];
+                 transform.GetChild(0).GetComponent<MeshRenderer>().material =
+                         Resources.Load<Material>($"Materials/{Card.GetSuitName(bottomCard.Suit)}{bottomCard.Number}");
+             }
          }
      }
 

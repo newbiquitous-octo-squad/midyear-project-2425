@@ -347,6 +347,7 @@ MonoBehaviour:
   lookSpeed: 2
   lookXLimit: 45
   handPrefab: {fileID: 5410687234103774772, guid: 2e96c9f03566e554da5fcde871ae0464, type: 3}
+  deckPrefab: {fileID: 6390085551655968043, guid: b729ac63f28d81b4b96b70a7ea6387da, type: 3}
   canMove: 1
   cameraYOffset: 0.4
 --- !u!1 &2744340522448576699
