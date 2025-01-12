@@ -64,7 +64,7 @@ public class Hand : NetworkBehaviour
     void RaiseHandRpc()
     {
         _raised.Value = !_raised.Value;
-        transform.localPosition += new Vector3(0, _raised.Value ? 0.04f : -0.04f, 0);
+        transform.localPosition += new Vector3(0, _raised.Value ? 0.15f : -0.15f, 0);
     }
 
 

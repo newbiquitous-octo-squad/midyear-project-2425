@@ -56,7 +56,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         var hand = NetworkManager.SpawnManager.InstantiateAndSpawn(handPrefab.GetComponent<NetworkObject>(), ownerClientId: ownerId);
         hand.GetComponent<NetworkObject>().TrySetParent(transform);
-        hand.transform.localPosition += new Vector3(0, -0.1f, 0.75f);
+        hand.transform.localPosition += new Vector3(0, -0.15f, 0.7f);
     }
 
     void Update()
@@ -100,12 +100,12 @@ public class PlayerMovement : NetworkBehaviour
 
     if (Input.GetKey(KeyCode.Q))
     {
-        RotateCardRpc(-1);
+        RotateCardRpc(-0.5f);
     }
 
     if (Input.GetKey(KeyCode.E))
     {
-        RotateCardRpc(1);
+        RotateCardRpc(0.5f);
     }
 
     if (Cursor.lockState == CursorLockMode.Locked)
@@ -215,14 +215,15 @@ public class PlayerMovement : NetworkBehaviour
 
     void ClickOnTable(RaycastHit hit, bool flip = false)
     {
+        Debug.Log(transform.localEulerAngles.y);
         var hand = transform.GetComponentInChildren<Hand>();
         if (!hand.centerSelected.Value) return;
         
-        var card = hand.gameObject.transform.GetChild(hand.center.Value);
+        var card = hand.gameObject.transform.GetChild(hand.center.Value);   
         card.GetComponent<NetworkObject>().TryRemoveParent();
         
         card.position = hit.point;
-        card.rotation = flip ? Quaternion.Euler(0, 0, 180) : Quaternion.identity;
+        card.rotation = flip ? Quaternion.Euler(0, transform.localEulerAngles.y, 180) : Quaternion.Euler(0, transform.localEulerAngles.y, 0);
         
         hand.centerSelected.Value = false;
         hand.hand.RemoveAt(hand.center.Value);
@@ -283,7 +284,7 @@ public class PlayerMovement : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    void RotateCardRpc(int direction)
+    void RotateCardRpc(float direction)
     {
         var cameraTransform = transform.GetComponentInChildren<Camera>().transform;
         if (Physics.Raycast(cameraTransform.position + new Vector3(0, cameraYOffset, 0),
