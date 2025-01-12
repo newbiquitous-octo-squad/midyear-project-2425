@@ -75,6 +75,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  cardSuit:
+    m_InternalValue: 0
+  cardNumber:
+    m_InternalValue: 0
 --- !u!114 &-4802994912379026274
 MonoBehaviour:
   m_ObjectHideFlags: 0
