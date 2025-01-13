@@ -20,7 +20,6 @@ public class Hand : NetworkBehaviour
     private void Awake()
     {
         _input = GetComponent<PlayerInput>();
-        _deck = GameObject.Find("Deck").GetComponent<Deck>();
     }
 
     public override void OnNetworkSpawn()

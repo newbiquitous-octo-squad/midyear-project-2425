@@ -236,7 +236,7 @@ public class PlayerMovement : NetworkBehaviour
             cardYRotation = angles.OrderBy(angle => Mathf.Abs(Mathf.DeltaAngle(playerYRotation, angle))).First();
         }
 
-        card.position = hit.point;
+        card.position = hit.point + new Vector3(0, 0.01f, 0);
         card.rotation = flip ? Quaternion.Euler(0, cardYRotation, 180) : Quaternion.Euler(0, cardYRotation, 0);
 
         hand.RemoveCenterCard();
@@ -244,8 +244,9 @@ public class PlayerMovement : NetworkBehaviour
 
     private void ClickOnDeck(RaycastHit hit)
     {
+        Debug.Log("Among us overlords are coming to town");
         var hand = transform.GetComponentInChildren<Hand>();
-        var deck = hit.transform.childCount == 1 ? hit.transform.GetComponent<Deck>() : hit.transform.GetComponentInParent<Deck>();
+        var deck = hit.transform.GetComponent<Deck>();
         if (!hand.centerSelected.Value) 
             hand.DrawCardToHand(deck);
         else
@@ -286,14 +287,11 @@ public class PlayerMovement : NetworkBehaviour
 
     private void Flip(RaycastHit hit)
     {
-        if (hit.transform.parent.childCount == 1)
-        {
-            hit.transform.parent.rotation = Quaternion.Euler(hit.transform.parent.rotation.eulerAngles + new Vector3(0, 0, 180));
-            return;
-        }
         if (hit.transform.parent != null) return;
 
         hit.transform.rotation = Quaternion.Euler(hit.transform.rotation.eulerAngles + new Vector3(0, 0, 180));
+        if (hit.transform.gameObject.layer == 3)
+            hit.transform.position += new Vector3(0, 0.35f, 0);
     }
 
     [Rpc(SendTo.Server)]

@@ -78,7 +78,7 @@ namespace deckSpace
 
          private Index LastIndex()
          {
-             return transform.rotation.z == 0f ? ^1 : 0;
+             return Mathf.Abs(transform.localEulerAngles.z) <= 40.0f ? ^1 : 0;
          }
 
          public override void OnNetworkSpawn()
@@ -87,7 +87,7 @@ namespace deckSpace
              if (IsServer)
              {
                  ResetDeck();
-                 UpdateTexture();
+                 UpdateTextureRpc();
              }
              
              base.OnNetworkSpawn();
@@ -114,7 +114,7 @@ namespace deckSpace
              if (_deckList.Count <= 0) return;
              
              _deckList.Remove(_deckList[LastIndex()]);
-             UpdateTexture();
+             UpdateTextureRpc();
 
          }
 
@@ -126,7 +126,7 @@ namespace deckSpace
                  var n = r.Next(i, _deckList.Count);
                  (_deckList[i], _deckList[n]) = (_deckList[n], _deckList[i]);
              }
-             UpdateTexture();
+             UpdateTextureRpc();
 
          }
 
@@ -138,7 +138,8 @@ namespace deckSpace
              }
          }
 
-         void UpdateTexture(bool checkIfRemove = true)
+         [Rpc(SendTo.Everyone)]
+         void UpdateTextureRpc(bool checkIfRemove = true)
          {
              transform.localScale = _deckList.Count > 0 ? new Vector3(0.05f, _deckList.Count / 1040f, 0.05f) : Vector3.zero;
              if (_deckList.Count == 0 && checkIfRemove)
@@ -163,7 +164,7 @@ namespace deckSpace
          public void AddCard(CardType card)
          {
              _deckList.Insert(LastIndex().Value == 0 ? 0 : _deckList.Count, card);
-             UpdateTexture(false);
+             UpdateTextureRpc(false);
          }
 
          public void Empty()
@@ -179,7 +180,7 @@ namespace deckSpace
              if (_textureFrames < 10)
              {
                  _textureFrames++;
-                 UpdateTexture(false);
+                 UpdateTextureRpc(false);
              }
          }
      }
