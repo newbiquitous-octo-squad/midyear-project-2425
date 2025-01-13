@@ -27,7 +27,7 @@ public class JoinGame : MonoBehaviour
 
         _transport.OnTransportEvent += OnTransportEvent;
 
-        // Wait time for connecting to the server is the hearbeat interval * max connect attempts
+        // Wait time for connecting to the server is the heartbeat interval * max connect attempts
         // Default heartbeat interval is 1 second, default max connect attempts is 60
         _transport.MaxConnectAttempts = 10;
     }
