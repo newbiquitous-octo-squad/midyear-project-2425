@@ -47,7 +47,8 @@ namespace deckSpace
          public GameObject cardPrefab;
 
          private int _textureFrames;
-         
+         private int _spinFrames;
+             
          private Rigidbody _rigidbody;
 
          private (Suit suit, int number)[] _defaultDeck = {
@@ -120,6 +121,9 @@ namespace deckSpace
 
          public void Shuffle()
          {
+             // can't shuffle while shufflin'
+             if (_spinFrames != 0) return;
+             
              Random r = new();
              for (var i = 0; i < _deckList.Count; i++)
              {
@@ -127,6 +131,11 @@ namespace deckSpace
                  (_deckList[i], _deckList[n]) = (_deckList[n], _deckList[i]);
              }
              UpdateTextureRpc();
+             
+             // go up!!!!!!!!!!!!!!!
+             
+             transform.position += new Vector3(0, 1f, 0);
+             _spinFrames = 60;
 
          }
 
@@ -181,6 +190,12 @@ namespace deckSpace
              {
                  _textureFrames++;
                  UpdateTextureRpc(false);
+             }
+             
+             if (IsServer && _spinFrames > 0)
+             {
+                 _spinFrames--;
+                 transform.Rotate(Vector3.up, 18);
              }
          }
      }
