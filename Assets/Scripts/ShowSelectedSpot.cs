@@ -18,6 +18,9 @@ public class ShowSelectedSpot : MonoBehaviour
     void Update()
     {
         _camera = Camera.allCameras.First().transform;
+
+        if (_camera.parent != null && !_camera.parent.GetComponentInChildren<Hand>().centerSelected.Value)
+            return;
         
         if (Physics.Raycast(_camera.position, _camera.TransformDirection(Vector3.forward), out var hit, 
                 5f, LayerMask.GetMask("Card", "Deck", "Table")))
