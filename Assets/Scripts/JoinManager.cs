@@ -18,13 +18,14 @@ public class JoinGame : MonoBehaviour
         _networkManager = GetComponent<NetworkManager>();
         _transport = GetComponent<UnityTransport>();
 
-        // Default port is 7777
-        port = 7777;
-        // Default IP address is 127.0.0.1
-        ipAddress = "127.0.0.1";
-        // Allow connections from everyone
-        serverListenAddress = "0.0.0.0";
+        // Michael server ip address and port
+        // ipAddress = "147.185.221.25";
+        // port = 13344;
 
+        // localhost
+        ipAddress = "127.0.0.1";
+        port = 7777;
+        
         _transport.OnTransportEvent += OnTransportEvent;
 
         // Wait time for connecting to the server is the heartbeat interval * max connect attempts

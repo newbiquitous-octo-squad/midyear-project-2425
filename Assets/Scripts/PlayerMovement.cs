@@ -244,7 +244,6 @@ public class PlayerMovement : NetworkBehaviour
 
     private void ClickOnDeck(RaycastHit hit)
     {
-        Debug.Log("Among us overlords are coming to town");
         var hand = transform.GetComponentInChildren<Hand>();
         var deck = hit.transform.GetComponent<Deck>();
         if (!hand.centerSelected.Value) 
