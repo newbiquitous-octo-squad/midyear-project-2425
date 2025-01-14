@@ -2,6 +2,7 @@ using System.Linq;
 using Cards;
 using deckSpace;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using Cursor = UnityEngine.Cursor;
 
@@ -85,6 +86,7 @@ public class PlayerMovement : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        var nameShow = GetComponentInChildren<NameShow>();
         _playerCamera.enabled = IsOwner;
         if (IsOwner)
         {
