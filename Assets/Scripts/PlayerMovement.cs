@@ -27,7 +27,7 @@ public class PlayerMovement : NetworkBehaviour
     private Camera _playerCamera;
     private float _rotationX;
     private Card _selectedCard;
-
+    
     private void Awake()
     {
         _characterController = GetComponent<CharacterController>();

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
@@ -13,18 +14,19 @@ public class JoinGame : MonoBehaviour
     private string serverListenAddress;
     private bool showPanel;
 
+    public string playerName;
     private void Awake()
     {
         _networkManager = GetComponent<NetworkManager>();
         _transport = GetComponent<UnityTransport>();
 
         // Michael server ip address and port
-        ipAddress = "147.185.221.25";
-        port = 13344;
+        // ipAddress = "147.185.221.25";
+        // port = 13344;
 
         // localhost
-        // ipAddress = "127.0.0.1";
-        // port = 7777;
+        ipAddress = "127.0.0.1";
+        port = 7777;
         
         _transport.OnTransportEvent += OnTransportEvent;
 
@@ -52,13 +54,17 @@ public class JoinGame : MonoBehaviour
 
         if (!_networkManager.IsClient && !_networkManager.IsServer)
         {
+            GUILayout.Label("Enter name: ");
+            playerName = GUILayout.TextField(playerName);
+            
             if (GUILayout.Button("Join Game!", style))
             {
                 UpdateConnectionData(ipAddress, port, serverListenAddress);
                 _networkManager.StartClient();
                 Debug.Log("Connecting to server...");
+                Debug.Log("name is " + playerName);
             }
-
+            
             // TODO: DELETE THIS IN PRODUCTION 🙏
             if (GUILayout.Button("Server"))
             {
