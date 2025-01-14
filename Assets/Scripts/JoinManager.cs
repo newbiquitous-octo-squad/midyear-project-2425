@@ -19,12 +19,12 @@ public class JoinGame : MonoBehaviour
         _transport = GetComponent<UnityTransport>();
 
         // Michael server ip address and port
-        // ipAddress = "147.185.221.25";
-        // port = 13344;
+        ipAddress = "147.185.221.25";
+        port = 13344;
 
         // localhost
-        ipAddress = "127.0.0.1";
-        port = 7777;
+        // ipAddress = "127.0.0.1";
+        // port = 7777;
         
         _transport.OnTransportEvent += OnTransportEvent;
 

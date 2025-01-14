@@ -20,7 +20,10 @@ public class ShowSelectedSpot : MonoBehaviour
         _camera = Camera.allCameras.First().transform;
 
         if (_camera.parent != null && !_camera.parent.GetComponentInChildren<Hand>().centerSelected.Value)
+        {
+            transform.position = new Vector3(0, -100, 0); // send it to the abyss
             return;
+        }
         
         if (Physics.Raycast(_camera.position, _camera.TransformDirection(Vector3.forward), out var hit, 
                 5f, LayerMask.GetMask("Card", "Deck", "Table")))
@@ -46,7 +49,7 @@ public class ShowSelectedSpot : MonoBehaviour
         }
         else
         {
-            transform.position = new Vector3(0,-100, 0); // send it to the abyss
+            transform.position = new Vector3(0, -100, 0); // send it to the abyss
         }
     }
 }
