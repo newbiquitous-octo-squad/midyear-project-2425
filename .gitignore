@@ -79,4 +79,9 @@ crashlytics-build.properties
 .vscode
 .vsconfig
 .idea
+
+
+# web build
+web/node_modules
+web/package-lock.json
 ProjectSettings/ProjectVersion.txt
