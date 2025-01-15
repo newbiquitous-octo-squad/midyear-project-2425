@@ -72,6 +72,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  center:
+    m_InternalValue: 0
+  centerSelected:
+    m_InternalValue: 0
   cardPrefab: {fileID: 2534271353859667840, guid: 05eea4e4386d3fd49a6a432127cd201a, type: 3}
 --- !u!114 &3189577539266695331
 MonoBehaviour:
@@ -99,7 +103,7 @@ MonoBehaviour:
       m_Calls: []
   m_ActionEvents: []
   m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: 
-  m_DefaultActionMap: 
+  m_DefaultControlScheme: Keyboard&Mouse
+  m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
