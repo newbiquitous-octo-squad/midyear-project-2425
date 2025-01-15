@@ -118,8 +118,8 @@ public class JoinGame : MonoBehaviour
         GUILayout.Label("Server is running on port: " + port);
         if (GUILayout.Button("Stop Server"))
         {
-            // _networkManager.StopServer();
-            // showHostPage = false;
+            _networkManager.Shutdown();
+            showServerHostScreen = false;
         }
         GUILayout.EndArea();
     }
