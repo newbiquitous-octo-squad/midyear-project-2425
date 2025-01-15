@@ -28,6 +28,9 @@ public class PlayerMovement : NetworkBehaviour
     private Camera _playerCamera;
     private float _rotationX;
     private Card _selectedCard;
+
+    private bool _paused;
+    private GameObject _canvas;
     
     private void Awake()
     {
@@ -35,6 +38,12 @@ public class PlayerMovement : NetworkBehaviour
         _playerCamera = GetComponentInChildren<Camera>();
         _playerCamera.enabled = false;
         _crosshair = GameObject.Find("Crosshair");
+        if(_crosshair == null) Debug.LogError("Crosshair not found");
+        
+        _canvas = GameObject.Find("Canvas");
+        _canvas.SetActive(false);
+
+        _paused = false;
     }
 
     private void Update()
@@ -46,19 +55,13 @@ public class PlayerMovement : NetworkBehaviour
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
-            if (_crosshair != null)
-                _crosshair.SetActive(false);
-            else
-                Debug.LogWarning("Canvas object not found.");
+            _crosshair.SetActive(false);
         }
         else if (Cursor.lockState == CursorLockMode.None && Input.GetKeyDown(KeyCode.Z))
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-            if (_crosshair != null)
-                _crosshair.SetActive(true);
-            else
-                Debug.LogWarning("Canvas object not found.");
+            _crosshair.SetActive(true);
         }
 
         bool isShiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
@@ -74,6 +77,8 @@ public class PlayerMovement : NetworkBehaviour
         if (Input.GetKey(KeyCode.Q)) RotateCardRpc(-0.5f);
 
         if (Input.GetKey(KeyCode.E)) RotateCardRpc(0.5f);
+
+        if (Input.GetKey(KeyCode.BackQuote)) TogglePause();
 
         if (Cursor.lockState == CursorLockMode.Locked)
         {
@@ -318,5 +323,35 @@ public class PlayerMovement : NetworkBehaviour
             hit.transform.rotation =
                 Quaternion.Euler(hit.transform.rotation.eulerAngles + new Vector3(0, direction, 0));
         }
+    }
+
+    public void TogglePause()
+    {
+        if (_paused)
+        {
+            _canvas.SetActive(false);
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            _crosshair.SetActive(true);
+        }
+        else
+        {
+            _canvas.SetActive(true);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            _crosshair.SetActive(false);
+
+        }
+        _paused = !_paused;
+    }
+
+    public void QuitGame()
+    {
+        Debug.Log("yeah quit n stuff");
+        //TODO: LEAVE THE SERVER 
+        //TODO: DUMP CARDS ON THE GROUND OR SUM WHEN U LEAVE
+
+        //PINAk this is for u do NOT use shutdown it does NOT work good i think theres a StopClient() method
+        NetworkManager.Singleton.Shutdown();
     }
 }
