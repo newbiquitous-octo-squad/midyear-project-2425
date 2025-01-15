@@ -14,9 +14,10 @@ public class JoinGame : MonoBehaviour
     private string ipAddress;
     private ushort port;
     private string serverListenAddress;
-    private bool showPanel;
+    // private bool showPanel;
     private bool showServerOptions;
     private bool showServerHostScreen;
+    private bool showWebServerIncompatiblePopup;
 
     private void Awake()
     {
@@ -66,17 +67,25 @@ public class JoinGame : MonoBehaviour
             // TODO: DELETE THIS IN PRODUCTION 🙏
             if (GUILayout.Button("Server"))
             {
-                showServerOptions = true;
+                if (Application.platform != RuntimePlatform.WebGLPlayer)
+                {
+                    showServerOptions = true;
+                }
+                else
+                {
+                    showWebServerIncompatiblePopup = true;
+                }
             }
 
-            if (GUILayout.Button("Show Panel")) showPanel = true;
+            // if (GUILayout.Button("Show Panel")) showPanel = true;
         }
 
         GUILayout.EndArea();
 
-        if (showPanel) ShowPanel();
+        // if (showPanel) ShowPanel();
         if (showServerOptions) ShowServerOptions();
         if (showServerHostScreen) ShowServerHostScreen();
+        if (showWebServerIncompatiblePopup) ShowWebServerIncompatiblePopup();
 
     }
 
@@ -112,6 +121,17 @@ public class JoinGame : MonoBehaviour
         GUILayout.EndArea();
     }
 
+    private void ShowWebServerIncompatiblePopup()
+    {
+        GUILayout.BeginArea(new Rect(Screen.width / 2f - 200, Screen.height / 2f - 100, 400, 200));
+        GUILayout.Label("Server hosting is not supported on WebGL builds.");
+        if (GUILayout.Button("OK"))
+        {
+            showWebServerIncompatiblePopup = false;
+        }
+        GUILayout.EndArea();
+    }
+
     private void ShowServerHostScreen()
     {
         GUILayout.BeginArea(new Rect(Screen.width / 2f - 200, Screen.height / 2f - 100, 400, 200));
@@ -124,33 +144,33 @@ public class JoinGame : MonoBehaviour
         GUILayout.EndArea();
     }
 
-    private void ShowPanel()
-    {
-        if (showPanel)
-        {
-            var panelWidth = Screen.width * 0.7f;
-            var panelHeight = Screen.height * 0.8f;
-            var panelX = (Screen.width - panelWidth) / 2;
-            var panelY = (Screen.height - panelHeight) / 2;
+    // private void ShowPanel()
+    // {
+    //     if (showPanel)
+    //     {
+    //         var panelWidth = Screen.width * 0.7f;
+    //         var panelHeight = Screen.height * 0.8f;
+    //         var panelX = (Screen.width - panelWidth) / 2;
+    //         var panelY = (Screen.height - panelHeight) / 2;
 
-            GUI.color = Color.gray;
-            GUI.DrawTexture(new Rect(panelX, panelY, panelWidth, panelHeight), Texture2D.whiteTexture);
-            GUI.color = Color.white;
+    //         GUI.color = Color.gray;
+    //         GUI.DrawTexture(new Rect(panelX, panelY, panelWidth, panelHeight), Texture2D.whiteTexture);
+    //         GUI.color = Color.white;
 
-            var textStyle = new GUIStyle();
-            textStyle.fontSize = 20;
-            textStyle.font = Resources.Load<Font>("Fonts/casino.3d-marquee-regular");
-            textStyle.alignment = TextAnchor.MiddleCenter;
-            textStyle.normal.textColor = Color.cyan;
+    //         var textStyle = new GUIStyle();
+    //         textStyle.fontSize = 20;
+    //         textStyle.font = Resources.Load<Font>("Fonts/casino.3d-marquee-regular");
+    //         textStyle.alignment = TextAnchor.MiddleCenter;
+    //         textStyle.normal.textColor = Color.cyan;
 
-            GUILayout.BeginArea(new Rect(panelX, panelY, panelWidth, panelHeight));
-            GUILayout.Label("Lobby joining system to be implemented here:", textStyle);
-            GUILayout.Label("Format & do the client (maybe host) handling within this panel", textStyle);
-            GUILayout.EndArea();
+    //         GUILayout.BeginArea(new Rect(panelX, panelY, panelWidth, panelHeight));
+    //         GUILayout.Label("Lobby joining system to be implemented here:", textStyle);
+    //         GUILayout.Label("Format & do the client (maybe host) handling within this panel", textStyle);
+    //         GUILayout.EndArea();
 
-            if (GUI.Button(new Rect(panelX + 25, panelY + 25, 75, 75), "X", textStyle)) showPanel = false;
-        }
-    }
+    //         if (GUI.Button(new Rect(panelX + 25, panelY + 25, 75, 75), "X", textStyle)) showPanel = false;
+    //     }
+    // }
 
     private void OnTransportEvent(NetworkEvent networkEvent, ulong clientId, ArraySegment<byte> payload,
         float receiveTime)
