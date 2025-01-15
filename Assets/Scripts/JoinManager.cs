@@ -15,6 +15,8 @@ public class JoinGame : MonoBehaviour
     private ushort port;
     private string serverListenAddress;
     private bool showPanel;
+    private bool showServerOptions;
+    private bool showServerHostScreen;
 
     private void Awake()
     {
@@ -26,7 +28,7 @@ public class JoinGame : MonoBehaviour
         port = 7777;
 
         serverListenAddress = "0.0.0.0";
-        
+
         _transport.OnTransportEvent += OnTransportEvent;
 
         // Wait time for connecting to the server is the heartbeat interval * max connect attempts
@@ -53,19 +55,18 @@ public class JoinGame : MonoBehaviour
 
         if (!_networkManager.IsClient && !_networkManager.IsServer)
         {
-            
+
             if (GUILayout.Button("Join Game!", style))
             {
                 UpdateConnectionData(ipAddress, port, serverListenAddress);
                 _networkManager.StartClient();
                 Debug.Log("Connecting to server...");
             }
-            
+
             // TODO: DELETE THIS IN PRODUCTION 🙏
             if (GUILayout.Button("Server"))
             {
-                UpdateConnectionData(ipAddress, port, serverListenAddress);
-                _networkManager.StartServer();
+                showServerOptions = true;
             }
 
             if (GUILayout.Button("Show Panel")) showPanel = true;
@@ -73,6 +74,58 @@ public class JoinGame : MonoBehaviour
 
         GUILayout.EndArea();
 
+        if (showPanel) ShowPanel();
+        if (showServerOptions) ShowServerOptions();
+        if (showServerHostScreen) ShowServerHostScreen();
+
+    }
+
+    private void ShowServerOptions()
+    {
+        bool validPort = true;
+        GUILayout.BeginArea(new Rect(Screen.width / 2f - 150, Screen.height / 2f - 75, 300, 150));
+        GUILayout.Label("Enter Port Number:");
+        string portString = GUILayout.TextField(port.ToString(), 5);
+        try
+        {
+            port = ushort.Parse(portString);
+        }
+        catch (Exception)
+        {
+            validPort = false;
+        }
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("OK") && validPort)
+        {
+            showServerOptions = false;
+            UpdateConnectionData(ipAddress, port, serverListenAddress);
+            _networkManager.StartServer();
+            showServerHostScreen = true;
+        }
+        if (GUILayout.Button("Cancel"))
+        {
+            showServerOptions = false;
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.EndArea();
+    }
+
+    private void ShowServerHostScreen()
+    {
+        GUILayout.BeginArea(new Rect(Screen.width / 2f - 200, Screen.height / 2f - 100, 400, 200));
+        GUILayout.Label("Server is running on port: " + port);
+        if (GUILayout.Button("Stop Server"))
+        {
+            _networkManager.Shutdown();
+            showServerHostScreen = false;
+        }
+        GUILayout.EndArea();
+    }
+
+    private void ShowPanel()
+    {
         if (showPanel)
         {
             var panelWidth = Screen.width * 0.7f;
@@ -95,7 +148,7 @@ public class JoinGame : MonoBehaviour
             GUILayout.Label("Format & do the client (maybe host) handling within this panel", textStyle);
             GUILayout.EndArea();
 
-            if (GUI.Button(new Rect(panelX + 25, panelY + 25, 75, 75), "X", style)) showPanel = false;
+            if (GUI.Button(new Rect(panelX + 25, panelY + 25, 75, 75), "X", textStyle)) showPanel = false;
         }
     }
 
