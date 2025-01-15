@@ -1,7 +1,6 @@
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
-
-// TODO: FIX WITH ARR PEE SEE 😈 omega
 
 public class FaceCamera : NetworkBehaviour
 {
@@ -10,7 +9,7 @@ public class FaceCamera : NetworkBehaviour
     void Start()
     {
         // Find the main camera
-        _playerCamera = Camera.main;
+        _playerCamera = Camera.allCameras.First();
         
         if (_playerCamera == null)
         {

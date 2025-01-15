@@ -47,7 +47,6 @@ public class Hand : NetworkBehaviour
         {
            RaiseHandRpc(); 
         }
-
     }
 
     [Rpc(SendTo.Server)]
@@ -91,7 +90,6 @@ public class Hand : NetworkBehaviour
         {
             center.Value++;
         }
-        
         Reposition();
     }
 

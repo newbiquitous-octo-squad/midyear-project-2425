@@ -1,7 +1,4 @@
-using System;
 using System.Linq;
-using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,17 +6,22 @@ public class ShowSelectedSpot : MonoBehaviour
 {
     private Transform _camera;
     private PlayerInput _playerInput;
-    private void Awake()
-    {
-        _camera = Camera.allCameras.First().transform;
-        _playerInput = GetComponent<PlayerInput>();
-    }
 
     void Update()
     {
-        _camera = Camera.allCameras.First().transform;
+        if (Camera.allCameras.First() == Camera.main)
+        {
+            return;
+        }
 
-        if (_camera.parent != null && !_camera.parent.GetComponentInChildren<Hand>().centerSelected.Value)
+        if (_camera == null || _playerInput == null)
+        {
+            _camera = Camera.allCameras.First().transform;
+            _playerInput = _camera.parent.GetComponentInChildren<PlayerInput>();
+            return;
+        }
+
+        if (!_camera.parent.GetComponentInChildren<Hand>().centerSelected.Value)
         {
             transform.position = new Vector3(0, -100, 0); // send it to the abyss
             return;
