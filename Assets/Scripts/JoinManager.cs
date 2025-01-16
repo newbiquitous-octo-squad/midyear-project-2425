@@ -157,6 +157,7 @@ public class JoinGame : MonoBehaviour
         if (GUILayout.Button("Cancel", buttonStyle))
         {
             showServerOptions = false;
+            showDefaultGui = true;
         }
         GUILayout.EndHorizontal();
 
@@ -182,6 +183,7 @@ public class JoinGame : MonoBehaviour
         {
             _networkManager.Shutdown();
             showServerHostScreen = false;
+            showDefaultGui = true;
         }
         GUILayout.EndArea();
     }
@@ -236,7 +238,7 @@ public class JoinGame : MonoBehaviour
     {
         Debug.Log("brocken");
         _networkManager.Shutdown();
-        // showDefaultGui = true;
-        UnityEngine.SceneManagement.SceneManager.LoadScene("SampleScene");
+        showDefaultGui = true;
+        // UnityEngine.SceneManagement.SceneManager.LoadScene("SampleScene");
     }
 }
