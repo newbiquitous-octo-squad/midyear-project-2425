@@ -103,9 +103,40 @@ public class JoinGame : MonoBehaviour
     {
         showDefaultGui = false;
         bool validPort = true;
-        GUILayout.BeginArea(new Rect(Screen.width / 2f - 150, Screen.height / 2f - 75, 300, 150));
-        GUILayout.Label("Enter Port Number:");
-        string portString = GUILayout.TextField(port.ToString(), 5);
+
+        var areaStyle = new GUIStyle(GUI.skin.box)
+        {
+            padding = new RectOffset(20, 20, 20, 20),
+            normal = { background = Texture2D.whiteTexture }
+        };
+
+        var labelStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = 20,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.black }
+        };
+
+        var textFieldStyle = new GUIStyle(GUI.skin.textField)
+        {
+            fontSize = 20,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.black }
+        };
+
+        var buttonStyle = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 20,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.white, background = Texture2D.grayTexture },
+            active = { textColor = Color.black, background = Texture2D.whiteTexture },
+            padding = new RectOffset(10, 10, 10, 10)
+        };
+
+        GUILayout.BeginArea(new Rect(Screen.width / 2f - 150, Screen.height / 2f - 75, 300, 150), areaStyle);
+
+        GUILayout.Label("Enter Port Number:", labelStyle);
+        string portString = GUILayout.TextField(port.ToString(), 5, textFieldStyle);
         try
         {
             port = ushort.Parse(portString);
@@ -116,14 +147,14 @@ public class JoinGame : MonoBehaviour
         }
 
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("OK") && validPort)
+        if (GUILayout.Button("OK", buttonStyle) && validPort)
         {
             showServerOptions = false;
             UpdateConnectionData(ipAddress, port, serverListenAddress);
             _networkManager.StartServer();
             showServerHostScreen = true;
         }
-        if (GUILayout.Button("Cancel"))
+        if (GUILayout.Button("Cancel", buttonStyle))
         {
             showServerOptions = false;
         }
