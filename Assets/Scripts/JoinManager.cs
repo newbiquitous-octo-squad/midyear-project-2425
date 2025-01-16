@@ -152,6 +152,7 @@ public class JoinGame : MonoBehaviour
         {
             _networkManager.Shutdown();
             showServerHostScreen = false;
+            showDefaultGui = true;
         }
         GUILayout.EndArea();
     }
