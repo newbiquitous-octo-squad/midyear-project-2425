@@ -186,7 +186,7 @@ public class JoinGame : MonoBehaviour
     private void OnTransportEvent(NetworkEvent networkEvent, ulong clientId, ArraySegment<byte> payload,
         float receiveTime)
     {
-        if (networkEvent == NetworkEvent.Disconnect) ConnectionFailPopup();
+        if (networkEvent == NetworkEvent.Disconnect && _networkManager.IsClient) ConnectionFailPopup();
     }
 
     // private void OnClientDisconnectCallback(ulong clientId)
