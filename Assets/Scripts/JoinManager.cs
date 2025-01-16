@@ -208,6 +208,6 @@ public class JoinGame : MonoBehaviour
         Debug.Log("brocken");
         _networkManager.Shutdown();
         showDefaultGui = true;
-        UnityEngine.SceneManagement.SceneManager.LoadScene("SampleScene");
+        // UnityEngine.SceneManagement.SceneManager.LoadScene("SampleScene");
     }
 }
