@@ -1317,11 +1317,11 @@ MonoBehaviour:
 
 
     C: sort your hand. toggle between
-    ace=14 vs ace=1 by pressing it again
+    ace=15 vs ace=1 by pressing it again. works better the more you press it
 
 
-    Left/Right Arrows: shift selected
-    card left and right'
+    Left/Right
+    Arrows: shift selected card left and right'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a3ead84c42a29cd44bdc0d7f760fa906, type: 2}
   m_sharedMaterial: {fileID: 1234586323818041071, guid: a3ead84c42a29cd44bdc0d7f760fa906, type: 2}
