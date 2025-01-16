@@ -1,10 +1,7 @@
 using System;
-using System.Linq;
-using System.Text;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
-using Random = UnityEngine.Random;
 using Screen = UnityEngine.Device.Screen;
 
 public class JoinGame : MonoBehaviour
@@ -13,11 +10,14 @@ public class JoinGame : MonoBehaviour
     private UnityTransport _transport;
     private string ipAddress;
     private ushort port;
+
     private string serverListenAddress;
+
     // private bool showPanel;
     private bool showDefaultGui = true;
-    private bool showServerOptions;
+    private bool showJoinGameOptions;
     private bool showServerHostScreen;
+    private bool showServerOptions;
     private bool showWebServerIncompatiblePopup;
 
     private void Awake()
@@ -49,12 +49,11 @@ public class JoinGame : MonoBehaviour
     private void OnGUI()
     {
         if (showDefaultGui) ShowDefaultGui();
-
         // if (showPanel) ShowPanel();
+        if (showJoinGameOptions) ShowJoinGameOptions();
         if (showServerOptions) ShowServerOptions();
         if (showServerHostScreen) ShowServerHostScreen();
         if (showWebServerIncompatiblePopup) ShowWebServerIncompatiblePopup();
-
     }
 
     private void ShowDefaultGui()
@@ -71,30 +70,89 @@ public class JoinGame : MonoBehaviour
 
         if (!_networkManager.IsClient && !_networkManager.IsServer)
         {
-
             if (GUILayout.Button("Join Game!", style))
             {
                 showDefaultGui = false;
-                UpdateConnectionData(ipAddress, port, serverListenAddress);
-                _networkManager.StartClient();
-                Debug.Log("Connecting to server...");
+                showJoinGameOptions = true;
             }
 
-            // TODO: DELETE THIS IN PRODUCTION 🙏
             if (GUILayout.Button("Server"))
             {
                 if (Application.platform != RuntimePlatform.WebGLPlayer)
-                {
                     showServerOptions = true;
-                }
                 else
-                {
                     showWebServerIncompatiblePopup = true;
-                }
             }
-
-            // if (GUILayout.Button("Show Panel")) showPanel = true;
         }
+
+        GUILayout.EndArea();
+    }
+
+    private void ShowJoinGameOptions()
+    {
+        var validPort = true;
+
+        var areaStyle = new GUIStyle(GUI.skin.box)
+        {
+            padding = new RectOffset(20, 20, 20, 20),
+            normal = { background = Texture2D.whiteTexture }
+        };
+
+        var labelStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = 20,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.black }
+        };
+
+        var textFieldStyle = new GUIStyle(GUI.skin.textField)
+        {
+            fontSize = 20,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.black }
+        };
+
+        var buttonStyle = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 20,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.white, background = Texture2D.grayTexture },
+            active = { textColor = Color.black, background = Texture2D.whiteTexture },
+            padding = new RectOffset(10, 10, 10, 10)
+        };
+
+        GUILayout.BeginArea(new Rect(Screen.width / 2f - 225, Screen.height / 2f - 125, 450, 250), areaStyle);
+
+        GUILayout.Label("Enter IP Address:", labelStyle);
+        ipAddress = GUILayout.TextField(ipAddress, textFieldStyle);
+
+        GUILayout.Label("Enter Port Number:", labelStyle);
+        var portString = GUILayout.TextField(port.ToString(), 5, textFieldStyle);
+        try
+        {
+            port = ushort.Parse(portString);
+        }
+        catch (Exception)
+        {
+            validPort = false;
+        }
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("OK", buttonStyle) && validPort)
+        {
+            showJoinGameOptions = false;
+            UpdateConnectionData(ipAddress, port, serverListenAddress);
+            _networkManager.StartClient();
+            Debug.Log("Connecting to server...");
+        }
+
+        if (GUILayout.Button("Cancel", buttonStyle))
+        {
+            showJoinGameOptions = false;
+            showDefaultGui = true;
+        }
+
+        GUILayout.EndHorizontal();
 
         GUILayout.EndArea();
     }
@@ -102,7 +160,7 @@ public class JoinGame : MonoBehaviour
     private void ShowServerOptions()
     {
         showDefaultGui = false;
-        bool validPort = true;
+        var validPort = true;
 
         var areaStyle = new GUIStyle(GUI.skin.box)
         {
@@ -136,7 +194,7 @@ public class JoinGame : MonoBehaviour
         GUILayout.BeginArea(new Rect(Screen.width / 2f - 150, Screen.height / 2f - 75, 300, 150), areaStyle);
 
         GUILayout.Label("Enter Port Number:", labelStyle);
-        string portString = GUILayout.TextField(port.ToString(), 5, textFieldStyle);
+        var portString = GUILayout.TextField(port.ToString(), 5, textFieldStyle);
         try
         {
             port = ushort.Parse(portString);
@@ -154,11 +212,13 @@ public class JoinGame : MonoBehaviour
             _networkManager.StartServer();
             showServerHostScreen = true;
         }
+
         if (GUILayout.Button("Cancel", buttonStyle))
         {
             showServerOptions = false;
             showDefaultGui = true;
         }
+
         GUILayout.EndHorizontal();
 
         GUILayout.EndArea();
@@ -168,23 +228,45 @@ public class JoinGame : MonoBehaviour
     {
         GUILayout.BeginArea(new Rect(Screen.width / 2f - 200, Screen.height / 2f - 100, 400, 200));
         GUILayout.Label("Server hosting is not supported on WebGL builds.");
-        if (GUILayout.Button("OK"))
-        {
-            showWebServerIncompatiblePopup = false;
-        }
+        if (GUILayout.Button("OK")) showWebServerIncompatiblePopup = false;
         GUILayout.EndArea();
     }
 
     private void ShowServerHostScreen()
     {
-        GUILayout.BeginArea(new Rect(Screen.width / 2f - 200, Screen.height / 2f - 100, 400, 200));
-        GUILayout.Label("Server is running on port: " + port);
-        if (GUILayout.Button("Stop Server"))
+        var areaStyle = new GUIStyle(GUI.skin.box)
+        {
+            padding = new RectOffset(20, 20, 20, 20),
+            normal = { background = Texture2D.whiteTexture }
+        };
+
+        var labelStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = 20,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.black }
+        };
+
+        var buttonStyle = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 20,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.white, background = Texture2D.grayTexture },
+            active = { textColor = Color.black, background = Texture2D.whiteTexture },
+            padding = new RectOffset(10, 10, 10, 10)
+        };
+
+        GUILayout.BeginArea(new Rect(Screen.width / 2f - 200, Screen.height / 2f - 100, 400, 200), areaStyle);
+
+        GUILayout.Label("Server is running on port: " + port, labelStyle);
+
+        if (GUILayout.Button("Stop Server", buttonStyle))
         {
             _networkManager.Shutdown();
             showServerHostScreen = false;
             showDefaultGui = true;
         }
+
         GUILayout.EndArea();
     }
 
