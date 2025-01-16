@@ -9,13 +9,13 @@ namespace deckSpace
 
     public enum Suit
     {
-        HEARTS, 
-        DIAMONDS,
-        SPADES,
-        CLUBS
+        HEARTS = 4, 
+        DIAMONDS = 3,
+        SPADES = 2,
+        CLUBS = 1
     }
 
-    public struct CardType : INetworkSerializable, IEquatable<CardType>
+    public struct CardType : INetworkSerializable, IEquatable<CardType>, IComparable<CardType>
     {
         public Suit Suit;
         public int Number;
@@ -39,6 +39,18 @@ namespace deckSpace
         public bool Equals(CardType other)
         {
             return Suit == other.Suit && Number == other.Number;
+        }
+
+        public int CompareTo(CardType other)
+        {
+            if (Number != other.Number)
+            {
+                if (Number == 1) return 14 - other.Number; //ace case 1
+                if (other.Number == 1) return 14 - Number; //ace case 2
+                return Number.CompareTo(other.Number); // neither are aces
+            }
+            
+            return Suit.CompareTo(other.Suit);
         }
     }
 

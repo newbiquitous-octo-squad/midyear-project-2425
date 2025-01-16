@@ -123,15 +123,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Shuffle",
-                    "type": "Button",
-                    "id": "ab86dc14-950e-4fcb-956b-fd22bea7f0e7",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "RaiseHand",
                     "type": "Button",
                     "id": "85da6df3-7a16-4d66-991d-2ee8b363b9a2",
@@ -144,6 +135,15 @@
                     "name": "ShiftDown",
                     "type": "Button",
                     "id": "8943fb4c-e967-40d0-95b1-fa0c09387dbf",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Sort",
+                    "type": "Button",
+                    "id": "9b863193-216b-47ed-bb3f-52043b54b00c",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -626,17 +626,6 @@
                 },
                 {
                     "name": "",
-                    "id": "1ec4f5b4-ee30-4d27-8b17-067e0558b044",
-                    "path": "<Mouse>/rightButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "Shuffle",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "af307caf-b82d-4dbd-adf8-a2fa68bc5112",
                     "path": "<Keyboard>/#(R)",
                     "interactions": "",
@@ -654,6 +643,28 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "ShiftDown",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8de2f023-72b4-48b8-8ea3-5a30ae1cbccc",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Sort",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1d22c328-11fb-40da-b52a-0a46cd8e2a2a",
+                    "path": "<Keyboard>/c",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Sort",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
