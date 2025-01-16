@@ -1,7 +1,9 @@
 using UnityEngine;
 using Cards;
 using deckSpace;
+using NUnit.Framework;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
@@ -47,6 +49,37 @@ public class Hand : NetworkBehaviour
         {
            RaiseHandRpc(); 
         }
+
+        if (_input.actions["Sort"].triggered)
+            SortHandRpc();
+    }
+
+    [Rpc(SendTo.Server)]
+    void SortHandRpc()
+    {
+        for (int i = 0; i < hand.Count - 1; i++)
+        {
+            int maxIndex = i;
+            for (int j = i + 1; j < hand.Count; j++)
+            {
+                if (hand[j].CompareTo(hand[maxIndex]) > 0) // Corrected for descending order
+                {
+                    maxIndex = j;
+                }
+            }
+            if (maxIndex != i)
+            {
+                var card1 = transform.GetChild(i);
+                var card2 = transform.GetChild(maxIndex);
+
+                card1.SetSiblingIndex(maxIndex);
+                card2.SetSiblingIndex(i);
+                    
+                (hand[i], hand[maxIndex]) = (hand[maxIndex], hand[i]);
+            }
+        }
+        
+        Reposition();
     }
 
     [Rpc(SendTo.Server)]

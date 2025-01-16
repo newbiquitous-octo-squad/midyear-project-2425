@@ -42,6 +42,7 @@ namespace Cards
              {
                  UpdateTextures(cardSuit.Value, cardNumber.Value);
                  _hasInitializedTexture = true;
+                 name = String.Concat(cardNumber.Value, " ", GetSuitName(cardSuit.Value));
              }
          }
      }
