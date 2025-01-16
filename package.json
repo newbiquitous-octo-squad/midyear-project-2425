@@ -1,0 +1,16 @@
+{
+  "name": "midyear-project-2425-web",
+  "version": "1.0.0",
+  "description": "Our honesto opere... \\ proposal: https://docs.google.com/document/d/1MNozHB8FO-iRLRKFfcrmONOLb8aF_3tbu1zrwD6cZsY/edit?tab=t.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "me",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "path": "^0.12.7"
+  }
+}
