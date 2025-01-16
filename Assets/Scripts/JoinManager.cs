@@ -15,6 +15,7 @@ public class JoinGame : MonoBehaviour
     private ushort port;
     private string serverListenAddress;
     // private bool showPanel;
+    private bool showDefaultGui = true;
     private bool showServerOptions;
     private bool showServerHostScreen;
     private bool showWebServerIncompatiblePopup;
@@ -31,18 +32,32 @@ public class JoinGame : MonoBehaviour
         serverListenAddress = "0.0.0.0";
 
         _transport.OnTransportEvent += OnTransportEvent;
+        // _networkManager.OnClientDisconnectCallback += OnClientDisconnectCallback;      
 
         // Wait time for connecting to the server is the heartbeat interval * max connect attempts
         // Default heartbeat interval is 1 second, default max connect attempts is 60
         _transport.MaxConnectAttempts = 10;
+        showDefaultGui = true;
     }
 
     private void OnDestroy()
     {
         _transport.OnTransportEvent -= OnTransportEvent;
+        // _networkManager.OnClientDisconnectCallback -= OnClientDisconnectCallback;
     }
 
     private void OnGUI()
+    {
+        if (showDefaultGui) ShowDefaultGui();
+
+        // if (showPanel) ShowPanel();
+        if (showServerOptions) ShowServerOptions();
+        if (showServerHostScreen) ShowServerHostScreen();
+        if (showWebServerIncompatiblePopup) ShowWebServerIncompatiblePopup();
+
+    }
+
+    private void ShowDefaultGui()
     {
         GUI.color = Color.white;
         GUILayout.BeginArea(new Rect(Screen.width / 2f - 200, Screen.height / 1.5f, 400, 400));
@@ -59,6 +74,7 @@ public class JoinGame : MonoBehaviour
 
             if (GUILayout.Button("Join Game!", style))
             {
+                showDefaultGui = false;
                 UpdateConnectionData(ipAddress, port, serverListenAddress);
                 _networkManager.StartClient();
                 Debug.Log("Connecting to server...");
@@ -81,20 +97,46 @@ public class JoinGame : MonoBehaviour
         }
 
         GUILayout.EndArea();
-
-        // if (showPanel) ShowPanel();
-        if (showServerOptions) ShowServerOptions();
-        if (showServerHostScreen) ShowServerHostScreen();
-        if (showWebServerIncompatiblePopup) ShowWebServerIncompatiblePopup();
-
     }
 
     private void ShowServerOptions()
     {
+        showDefaultGui = false;
         bool validPort = true;
-        GUILayout.BeginArea(new Rect(Screen.width / 2f - 150, Screen.height / 2f - 75, 300, 150));
-        GUILayout.Label("Enter Port Number:");
-        string portString = GUILayout.TextField(port.ToString(), 5);
+
+        var areaStyle = new GUIStyle(GUI.skin.box)
+        {
+            padding = new RectOffset(20, 20, 20, 20),
+            normal = { background = Texture2D.whiteTexture }
+        };
+
+        var labelStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = 20,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.black }
+        };
+
+        var textFieldStyle = new GUIStyle(GUI.skin.textField)
+        {
+            fontSize = 20,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.black }
+        };
+
+        var buttonStyle = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 20,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.white, background = Texture2D.grayTexture },
+            active = { textColor = Color.black, background = Texture2D.whiteTexture },
+            padding = new RectOffset(10, 10, 10, 10)
+        };
+
+        GUILayout.BeginArea(new Rect(Screen.width / 2f - 150, Screen.height / 2f - 75, 300, 150), areaStyle);
+
+        GUILayout.Label("Enter Port Number:", labelStyle);
+        string portString = GUILayout.TextField(port.ToString(), 5, textFieldStyle);
         try
         {
             port = ushort.Parse(portString);
@@ -105,16 +147,17 @@ public class JoinGame : MonoBehaviour
         }
 
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("OK") && validPort)
+        if (GUILayout.Button("OK", buttonStyle) && validPort)
         {
             showServerOptions = false;
             UpdateConnectionData(ipAddress, port, serverListenAddress);
             _networkManager.StartServer();
             showServerHostScreen = true;
         }
-        if (GUILayout.Button("Cancel"))
+        if (GUILayout.Button("Cancel", buttonStyle))
         {
             showServerOptions = false;
+            showDefaultGui = true;
         }
         GUILayout.EndHorizontal();
 
@@ -140,6 +183,7 @@ public class JoinGame : MonoBehaviour
         {
             _networkManager.Shutdown();
             showServerHostScreen = false;
+            showDefaultGui = true;
         }
         GUILayout.EndArea();
     }
@@ -175,8 +219,14 @@ public class JoinGame : MonoBehaviour
     private void OnTransportEvent(NetworkEvent networkEvent, ulong clientId, ArraySegment<byte> payload,
         float receiveTime)
     {
-        if (networkEvent == NetworkEvent.Disconnect) ConnectionFailPopup();
+        if (networkEvent == NetworkEvent.Disconnect && _networkManager.IsClient) ConnectionFailPopup();
     }
+
+    // private void OnClientDisconnectCallback(ulong clientId)
+    // {
+    //     Debug.Log("disconnect callback i guess");
+    //     ConnectionFailPopup();
+    // }
 
     private void UpdateConnectionData(string ipAddress, ushort port, string serverListenAddress)
     {
@@ -186,6 +236,9 @@ public class JoinGame : MonoBehaviour
 
     private void ConnectionFailPopup()
     {
-        // TODO: Add popup UI depending on connection failure or forced disconnect? might need another method
+        Debug.Log("brocken");
+        _networkManager.Shutdown();
+        showDefaultGui = true;
+        // UnityEngine.SceneManagement.SceneManager.LoadScene("SampleScene");
     }
 }
